@@ -1,0 +1,6 @@
+*.txt
+*.iml
+*.class
+.idea/
+out/
+target/
