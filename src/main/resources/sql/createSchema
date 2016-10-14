@@ -1,0 +1,37 @@
+CREATE SCHEMA `testjdbc` DEFAULT CHARACTER SET utf8 ;
+
+CREATE TABLE `testjdbc`.`groups` (`id` BIGINT(20) NOT NULL,`name` VARCHAR(45) NOT NULL,PRIMARY KEY (`id`));
+
+CREATE TABLE `testjdbc`.`student` (
+  `id` BIGINT(20) NOT NULL,
+  `name` VARCHAR(90) NOT NULL,
+  `groupId` BIGINT(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  INDEX `group_id_idx` (`groupId` ASC),
+  CONSTRAINT `groupId`
+    FOREIGN KEY (`groupId`)
+    REFERENCES `jdbctest`.`group` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `testjdbc`.`subject` (
+  `id` BIGINT(20) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `description` VARCHAR(255) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+
+CREATE TABLE `testjdbc`.`teacher` (
+  `id` BIGINT(20) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `experience` INT NOT NULL,
+  `subjectId` BIGINT(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  INDEX `subject_id_idx` (`subjectId` ASC),
+  CONSTRAINT `subjectId`
+    FOREIGN KEY (`subjectId`)
+    REFERENCES `jdbctest`.`subject` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);

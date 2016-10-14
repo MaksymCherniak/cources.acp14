@@ -1,0 +1,7 @@
+TRUNCATE TABLE groups;
+
+TRUNCATE TABLE student;
+
+TRUNCATE TABLE teacher;
+
+TRUNCATE TABLE subject;
