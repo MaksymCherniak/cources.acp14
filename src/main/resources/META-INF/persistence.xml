@@ -7,11 +7,11 @@
     <persistence-unit name="main" transaction-type="RESOURCE_LOCAL">
 
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>week4.home.jdbc.entity.Group</class>
-        <class>week4.home.jdbc.entity.Student</class>
-        <class>week4.home.jdbc.entity.Subject</class>
-        <class>week4.home.jdbc.entity.Teacher</class>
-        <class>week4.home.jdbc.entity.Study</class>
+        <class>week4.home.study.entity.Groups</class>
+        <class>week4.home.study.entity.Student</class>
+        <class>week4.home.study.entity.Subject</class>
+        <class>week4.home.study.entity.Teacher</class>
+        <class>week4.home.study.entity.Study</class>
 
         <properties>
             <property name="hibernate.show_sql" value="true"/>
@@ -27,11 +27,11 @@
 
     <persistence-unit name="test" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>week4.home.jdbc.entity.Group</class>
-        <class>week4.home.jdbc.entity.Student</class>
-        <class>week4.home.jdbc.entity.Subject</class>
-        <class>week4.home.jdbc.entity.Teacher</class>
-        <class>week4.home.jdbc.entity.Study</class>
+        <class>week4.home.study.entity.Groups</class>
+        <class>week4.home.study.entity.Student</class>
+        <class>week4.home.study.entity.Subject</class>
+        <class>week4.home.study.entity.Teacher</class>
+        <class>week4.home.study.entity.Study</class>
 
        <properties>
            <property name="hibernate.show_sql" value="true"/>

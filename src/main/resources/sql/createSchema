@@ -11,7 +11,7 @@ CREATE TABLE `testjdbc`.`student` (
   INDEX `group_id_idx` (`groupId` ASC),
   CONSTRAINT `groupId`
     FOREIGN KEY (`groupId`)
-    REFERENCES `jdbctest`.`group` (`id`)
+    REFERENCES `jdbctest`.`groups` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 

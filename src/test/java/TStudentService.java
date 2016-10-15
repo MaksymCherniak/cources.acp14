@@ -1,81 +1,124 @@
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.junit.*;
-import week4.home.jdbc.dao.JDBCDriver;
-import week4.home.jdbc.dao.services.IGroupService;
-import week4.home.jdbc.dao.services.IStudentService;
-import week4.home.jdbc.dao.services.ServiceFactory;
-import week4.home.jdbc.entity.Group;
-import week4.home.jdbc.entity.Student;
-import week4.home.jdbc.main.AppStaticValues;
-
-import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 import org.apache.log4j.Logger;
+import org.junit.*;
+import week4.home.study.dao.HibernateUtil;
+import week4.home.study.dao.impls.mysql.GroupServiceImpl;
+import week4.home.study.dao.impls.mysql.StudentServiceImpl;
+import week4.home.study.dao.services.IGroupService;
+import week4.home.study.dao.services.IStudentService;
+import week4.home.study.dao.services.ServiceFactory;
+import week4.home.study.entity.Groups;
+import week4.home.study.entity.Student;
 
-import static org.junit.Assert.assertNotNull;
+import javax.persistence.EntityManager;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 public class TStudentService {
     private static Logger log = Logger.getLogger(TStudentService.class.getName());
-    private IStudentService iStudentService = ServiceFactory.getStudentInstance();
-    private IGroupService iGroupService = ServiceFactory.getGroupInstance();
+    private static IStudentService iStudentService = ServiceFactory.getStudentInstance();
+    private static IGroupService iGroupService = ServiceFactory.getGroupInstance();
+
     private Student student;
-    private Group group;
+    private Groups groups;
 
-    private static Connection connection;
-    private static ScriptRunner scriptRunner;
-
-    static {
-        connection = JDBCDriver.getTestConnection();
-        scriptRunner = new ScriptRunner(connection);
-    }
+    private static EntityManager entityManager;
 
     @BeforeClass
     public static void initializeConnection() {
-        scriptRunner.runScript(new InputStreamReader(Student.class.getResourceAsStream("/sql/createSchema")));
+        entityManager = HibernateUtil.getTestEm();
+        GroupServiceImpl.setEntityManager(entityManager);
+        StudentServiceImpl.setEntityManager(entityManager);
     }
 
     @AfterClass
     public static void shutdownConnection() {
-        scriptRunner.runScript(new InputStreamReader(Student.class.getResourceAsStream("/sql/dropTables")));
-
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            log.warn(AppStaticValues.ERROR_CONNECTION_CLOSE);
-        }
-    }
-
-    @After
-    public void after() {
-        scriptRunner.runScript(new InputStreamReader(Student.class.getResourceAsStream("/sql/truncateTables")));
+        entityManager.clear();
+        entityManager.close();
     }
 
     @Before
     public void initialize() {
+        groups = new Groups();
+        groups.setName("Test group");
 
-        group = new Group();
-        group.setId(994);
-        group.setName("Test group");
+        iGroupService.addGroup(groups);
 
         student = new Student();
-        student.setId(663);
-        student.setName("Test name");
-        student.setGroup(group.getId());
+        student.setName("Test student");
+        student.setGroups(iGroupService.getGroup(groups));
+    }
 
+    @After
+    public void delete() {
+        Student st = iStudentService.getStudent(student);
+
+        if (st != null) {
+            iStudentService.removeStudent(st.getId());
+        }
     }
 
     @Test
-    public void whenAddTheStudentExists() {
-       // assertNull("Student exists before added", iStudentService.getStudentById(student.getId()));
+    public void addStudentIsPossible() {
+        assertTrue("Student didn't add", iStudentService.addStudent(student));
+    }
 
-        iGroupService.addGroup(group);
-       iStudentService.addStudent(student);
+    @Test
+    public void addDuplicateStudentIsImpossible() {
+        iStudentService.addStudent(student);
 
-        assertNotNull("Student does not exist after added", iStudentService.getStudentById(student.getId()));
+        assertFalse("Duplicate student added", iStudentService.addStudent(student));
+    }
 
-       // iStudentService.removeStudent(student.getId());
+    @Test
+    public void studentExistsAfterAdd() {
+        iStudentService.addStudent(student);
 
-       // assertNull("Student exists after removed", iStudentService.getStudentById(student.getId()));
+        assertNotNull("Student not found", iStudentService.getStudent(student));
+    }
+
+    @Test
+    public void studentDoesNotExistAfterRemove() {
+        iStudentService.addStudent(student);
+
+        iStudentService.removeStudent(iStudentService.getStudent(student).getId());
+
+        assertNull("Student exists after remove", iStudentService.getStudent(student));
+    }
+
+    @Test
+    public void checkTotalStudents() {
+        iStudentService.addStudent(student);
+
+        assertThat(iStudentService.getAllStudents().size(), is(1));
+    }
+
+    @Test
+    public void updateStudentIsPossible() {
+        iStudentService.addStudent(student);
+
+        Student newStudent = iStudentService.getStudent(student);
+        newStudent.setName("Updated student");
+
+        assertTrue("Student didn't update", iStudentService.updateStudent(newStudent));
+    }
+
+    @Test
+    public void studentUpdated() {
+        iStudentService.addStudent(student);
+
+        Student newStudent = iStudentService.getStudent(student);
+        newStudent.setName("Updated student");
+
+        iStudentService.updateStudent(newStudent);
+
+        assertEquals("Student didn't update", newStudent, iStudentService.getStudent(newStudent));
+    }
+
+    @Test
+    public void checkGetStudentsByGroup() {
+        iStudentService.addStudent(student);
+
+        assertThat(iStudentService.getStudentsByGroup(iGroupService.getGroup(groups)).size(), is(1));
     }
 }
