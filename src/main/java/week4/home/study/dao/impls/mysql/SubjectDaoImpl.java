@@ -2,28 +2,40 @@ package week4.home.study.dao.impls.mysql;
 
 import org.apache.log4j.Logger;
 import week4.home.study.dao.HibernateUtil;
-import week4.home.study.dao.services.ISubjectService;
+import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.entity.Subject;
+import week4.home.study.exceptions.ComingNullObjectException;
+import week4.home.study.exceptions.EntityAlreadyExistException;
+import week4.home.study.exceptions.EntityNotFoundException;
+import week4.home.study.exceptions.OperationFailedException;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
 import static week4.home.study.start.AppStaticValues.*;
 
-public class SubjectServiceImpl implements ISubjectService {
+public class SubjectDaoImpl implements ISubjectDao {
     private static final String UPDATE_SUBJECT =
             "UPDATE Subject c set c.name=:name, c.description=:description WHERE subject_id LIKE :subject_id";
     private static final String FIND_SUBJECT = "SELECT s FROM Subject s WHERE s.name LIKE :name AND s.description LIKE :description";
     private static final String GET_ALL_SUBJECTS = "SELECT g from Subject g";
 
-    private static Logger log = Logger.getLogger(SubjectServiceImpl.class.getName());
-    private static EntityManager entityManager;
+    private static Logger log = Logger.getLogger(SubjectDaoImpl.class.getName());
+    private EntityManager entityManager;
 
-    static {
+    public SubjectDaoImpl() {
         entityManager = HibernateUtil.getEm();
     }
 
-    public boolean addSubject(Subject subject) {
+    public SubjectDaoImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public boolean addSubject(Subject subject) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+        if (subject == null) {
+            throw new ComingNullObjectException(Subject.class.getName(), OPERATION_ADD);
+        }
+
         try {
             if (getSubject(subject) == null) {
                 entityManager.getTransaction().begin();
@@ -31,17 +43,17 @@ public class SubjectServiceImpl implements ISubjectService {
                 entityManager.getTransaction().commit();
                 log.info(subject.toString() + LOG_OPERATION_ADD + " ");
                 return true;
+            } else {
+                throw new EntityAlreadyExistException(subject);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.info("");
-           // entityManager.getTransaction().rollback();
+        } catch (RuntimeException e) {
+            log.error(e);
         }
 
-        return false;
+        throw new OperationFailedException(Subject.class.getName(), OPERATION_ADD);
     }
 
-    public boolean removeSubject(long id) {
+    public boolean removeSubject(long id) throws EntityNotFoundException {
         Subject subject = getSubjectById(id);
 
         if (subject != null) {
@@ -52,10 +64,14 @@ public class SubjectServiceImpl implements ISubjectService {
             return true;
         }
 
-        return false;
+        throw new EntityNotFoundException(Subject.class.getName());
     }
 
-    public boolean updateSubject(Subject subject) {
+    public boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException {
+        if (subject == null) {
+            throw new ComingNullObjectException(Subject.class.getName(), OPERATION_UPDATE);
+        }
+
         try {
             if (getSubjectById(subject.getId()) != null) {
                 entityManager.getTransaction().begin();
@@ -69,10 +85,10 @@ public class SubjectServiceImpl implements ISubjectService {
                 return true;
             }
         } catch (Exception e) {
-            log.info("");
+            log.error(e);
         }
 
-        return false;
+        throw new OperationFailedException(Subject.class.getName(), OPERATION_UPDATE);
     }
 
     public Subject getSubject(Subject subject) {
@@ -96,11 +112,11 @@ public class SubjectServiceImpl implements ISubjectService {
         return null;
     }
 
-    public List<Subject> getAllSubjects() {
-        return entityManager.createQuery(GET_ALL_SUBJECTS).setMaxResults(100).getResultList();
+    public List<Subject> getAllSubjects(int from, int quantity) {
+        return entityManager.createQuery(GET_ALL_SUBJECTS).setFirstResult(from).setMaxResults(quantity).getResultList();
     }
 
-    public static void setEntityManager(EntityManager entityManager) {
-        SubjectServiceImpl.entityManager = entityManager;
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 }

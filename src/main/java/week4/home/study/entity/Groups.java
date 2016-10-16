@@ -14,6 +14,7 @@ public class Groups {
     private String name;
     @OneToMany(mappedBy = "groups")
     private Set<Student> students;
+
     @ManyToMany
     @JoinTable(
             name="study",
