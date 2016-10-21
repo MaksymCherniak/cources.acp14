@@ -15,9 +15,9 @@ public interface IGroupDao {
 
     boolean updateGroup(Groups groups) throws ComingNullObjectException, OperationFailedException;
 
-    Groups getGroup(Groups groups);
+    Groups getGroup(Groups groups) throws EntityNotFoundException;
 
-    Groups getGroupById(long id);
+    Groups getGroupById(long id) throws EntityNotFoundException;
 
     List<Groups> getAllGroups(int from, int quantity);
 }

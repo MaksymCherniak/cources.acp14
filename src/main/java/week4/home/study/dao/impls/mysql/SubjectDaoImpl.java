@@ -1,6 +1,7 @@
 package week4.home.study.dao.impls.mysql;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import week4.home.study.dao.HibernateUtil;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.entity.Subject;
@@ -10,10 +11,12 @@ import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static week4.home.study.start.AppStaticValues.*;
 
+@Service
 public class SubjectDaoImpl implements ISubjectDao {
     private static final String UPDATE_SUBJECT =
             "UPDATE Subject c set c.name=:name, c.description=:description WHERE subject_id LIKE :subject_id";
@@ -24,7 +27,7 @@ public class SubjectDaoImpl implements ISubjectDao {
     private EntityManager entityManager;
 
     public SubjectDaoImpl() {
-        entityManager = HibernateUtil.getEm();
+
     }
 
     public SubjectDaoImpl(EntityManager entityManager) {
@@ -37,17 +40,19 @@ public class SubjectDaoImpl implements ISubjectDao {
         }
 
         try {
-            if (getSubject(subject) == null) {
+            if (getSubject(subject) != null) {
+                throw new EntityAlreadyExistException(subject);
+            }
+        } catch (EntityNotFoundException e) {
+            try {
                 entityManager.getTransaction().begin();
                 entityManager.persist(subject);
                 entityManager.getTransaction().commit();
-                log.info(subject.toString() + LOG_OPERATION_ADD + " ");
+                log.info(subject.toString() + "" + LOG_OPERATION_ADD);
                 return true;
-            } else {
-                throw new EntityAlreadyExistException(subject);
+            } catch (RuntimeException ex) {
+                log.error(ex);
             }
-        } catch (RuntimeException e) {
-            log.error(e);
         }
 
         throw new OperationFailedException(Subject.class.getName(), OPERATION_ADD);
@@ -56,15 +61,11 @@ public class SubjectDaoImpl implements ISubjectDao {
     public boolean removeSubject(long id) throws EntityNotFoundException {
         Subject subject = getSubjectById(id);
 
-        if (subject != null) {
-            entityManager.getTransaction().begin();
-            entityManager.remove(subject);
-            entityManager.getTransaction().commit();
-            log.info("" + subject.toString() + LOG_OPERATION_REMOVE);
-            return true;
-        }
-
-        throw new EntityNotFoundException(Subject.class.getName());
+        entityManager.getTransaction().begin();
+        entityManager.remove(subject);
+        entityManager.getTransaction().commit();
+        log.info("" + subject.toString() + LOG_OPERATION_REMOVE);
+        return true;
     }
 
     public boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException {
@@ -91,7 +92,7 @@ public class SubjectDaoImpl implements ISubjectDao {
         throw new OperationFailedException(Subject.class.getName(), OPERATION_UPDATE);
     }
 
-    public Subject getSubject(Subject subject) {
+    public Subject getSubject(Subject subject) throws EntityNotFoundException {
         List<Subject> subjects = entityManager.createQuery(FIND_SUBJECT).setParameter(NAME, subject.getName())
                 .setParameter(DESCRIPTION, subject.getDescription()).getResultList();
         if (subjects.size() != 0) {
@@ -99,23 +100,24 @@ public class SubjectDaoImpl implements ISubjectDao {
         }
 
         log.info(ERROR_SUBJECT_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Subject.class.getName());
     }
 
-    public Subject getSubjectById(long id) {
+    public Subject getSubjectById(long id) throws EntityNotFoundException {
         Subject subject = entityManager.find(Subject.class, id);
         if (subject != null) {
             return subject;
         }
 
         log.info(ERROR_SUBJECT_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Subject.class.getName());
     }
 
     public List<Subject> getAllSubjects(int from, int quantity) {
         return entityManager.createQuery(GET_ALL_SUBJECTS).setFirstResult(from).setMaxResults(quantity).getResultList();
     }
 
+    @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.entityManager = entityManager;
     }

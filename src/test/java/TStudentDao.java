@@ -46,7 +46,8 @@ public class TStudentDao {
     }
 
     @Before
-    public void initialize() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void initialize() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         student = new Student();
         student.setName("Test students");
         student.setGroups(iGroupDao.getGroup(groups));
@@ -54,11 +55,10 @@ public class TStudentDao {
 
     @After
     public void delete() throws EntityNotFoundException {
-        Student st = iStudentDao.getStudent(student);
+        try{
+            iStudentDao.removeStudent(student.getId());
+        } catch (EntityNotFoundException e) {}
 
-        if (st != null) {
-            iStudentDao.removeStudent(st.getId());
-        }
     }
 
     @Test
@@ -74,13 +74,14 @@ public class TStudentDao {
     }
 
     @Test
-    public void studentExistsAfterAdd() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void studentExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iStudentDao.addStudent(student);
 
         assertNotNull("Student not found", iStudentDao.getStudent(student));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void studentDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
             , EntityNotFoundException, EntityAlreadyExistException {
         iStudentDao.addStudent(student);
@@ -98,7 +99,8 @@ public class TStudentDao {
     }
 
     @Test
-    public void updateStudentIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void updateStudentIsPossible() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iStudentDao.addStudent(student);
 
         Student newStudent = iStudentDao.getStudent(student);
@@ -108,7 +110,8 @@ public class TStudentDao {
     }
 
     @Test
-    public void studentUpdated() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void studentUpdated() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iStudentDao.addStudent(student);
 
         Student newStudent = iStudentDao.getStudent(student);
@@ -120,7 +123,8 @@ public class TStudentDao {
     }
 
     @Test
-    public void checkGetStudentsByGroup() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkGetStudentsByGroup() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iStudentDao.addStudent(student);
 
         assertThat(iStudentDao.getStudentsByGroup(iGroupDao.getGroup(groups), 10).size(), is(1));

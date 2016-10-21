@@ -15,9 +15,9 @@ public interface ITeacherDao {
 
     boolean updateTeacher(Teacher teacher) throws ComingNullObjectException, OperationFailedException;
 
-    Teacher getTeacher(Teacher teacher);
+    Teacher getTeacher(Teacher teacher) throws EntityNotFoundException;
 
-    Teacher getTeacherById(long id);
+    Teacher getTeacherById(long id) throws EntityNotFoundException;
 
     List<Teacher> getAllTeachers(int from, int quantity);
 

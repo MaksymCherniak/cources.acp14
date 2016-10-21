@@ -16,9 +16,9 @@ public interface IStudentDao {
 
     boolean updateStudent(Student student) throws ComingNullObjectException, OperationFailedException;
 
-    Student getStudentById(long id);
+    Student getStudentById(long id) throws EntityNotFoundException;
 
-    Student getStudent(Student student);
+    Student getStudent(Student student) throws EntityNotFoundException;
 
     List<Student> getAllStudents(int from, int quantity);
 

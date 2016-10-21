@@ -1,6 +1,7 @@
 package week4.home.study.dao.impls.mysql;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import week4.home.study.dao.HibernateUtil;
 import week4.home.study.dao.interfaces.ITeacherDao;
 import week4.home.study.entity.Teacher;
@@ -10,10 +11,12 @@ import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static week4.home.study.start.AppStaticValues.*;
 
+@Service
 public class TeacherDaoImpl implements ITeacherDao {
     private static final String UPDATE_TEACHER =
             "UPDATE Teacher c set c.name=:name, c.experience=:experience, subject_id=:subject_id " +
@@ -31,7 +34,7 @@ public class TeacherDaoImpl implements ITeacherDao {
     private EntityManager entityManager;
 
     public TeacherDaoImpl() {
-        entityManager = HibernateUtil.getEm();
+
     }
 
     public TeacherDaoImpl(EntityManager entityManager) {
@@ -44,17 +47,19 @@ public class TeacherDaoImpl implements ITeacherDao {
         }
 
         try {
-            if (getTeacher(teacher) == null) {
+            if (getTeacher(teacher) != null) {
+                throw new EntityAlreadyExistException(teacher);
+            }
+        } catch (EntityNotFoundException e) {
+            try {
                 entityManager.getTransaction().begin();
                 entityManager.persist(teacher);
                 entityManager.getTransaction().commit();
-                log.info("" + teacher.toString() + LOG_OPERATION_ADD);
+                log.info(teacher.toString() + " " + LOG_OPERATION_ADD);
                 return true;
-            } else {
-                throw new EntityAlreadyExistException(teacher);
+            } catch (RuntimeException ex) {
+                log.error(ex);
             }
-        } catch (RuntimeException e) {
-            log.error(e);
         }
 
         throw new OperationFailedException(Teacher.class.getName(), OPERATION_ADD);
@@ -99,7 +104,7 @@ public class TeacherDaoImpl implements ITeacherDao {
         throw new OperationFailedException(Teacher.class.getName(), OPERATION_UPDATE);
     }
 
-    public Teacher getTeacher(Teacher teacher) {
+    public Teacher getTeacher(Teacher teacher) throws EntityNotFoundException {
         List<Teacher> teachers = entityManager.createQuery(FIND_TEACHER)
                 .setParameter(NAME, teacher.getName())
                 .setParameter(EXPERIENCE, teacher.getExperience())
@@ -110,17 +115,17 @@ public class TeacherDaoImpl implements ITeacherDao {
         }
 
         log.info(ERROR_TEACHER_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Teacher.class.getName());
     }
 
-    public Teacher getTeacherById(long id) {
+    public Teacher getTeacherById(long id) throws EntityNotFoundException {
         Teacher teacher = entityManager.find(Teacher.class, id);
         if (teacher != null) {
             return teacher;
         }
 
         log.info(ERROR_TEACHER_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Teacher.class.getName());
     }
 
     public List<Teacher> getAllTeachers(int from, int quantity) {
@@ -141,6 +146,7 @@ public class TeacherDaoImpl implements ITeacherDao {
         return entityManager.createQuery(GET_MAX_EXPERIENCED).setFirstResult(from).setMaxResults(quantity).getResultList();
     }
 
+    @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.entityManager = entityManager;
     }

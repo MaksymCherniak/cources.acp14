@@ -1,6 +1,7 @@
 package week4.home.study.dao.impls.mysql;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import week4.home.study.dao.HibernateUtil;
 import week4.home.study.dao.interfaces.IStudentDao;
 import week4.home.study.entity.Groups;
@@ -11,10 +12,12 @@ import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static week4.home.study.start.AppStaticValues.*;
 
+@Service
 public class StudentDaoImpl implements IStudentDao {
     private static final String UPDATE_STUDENT =
             "UPDATE Student c set c.name=:name, group_id=:group_id WHERE student_id LIKE :student_id";
@@ -26,7 +29,7 @@ public class StudentDaoImpl implements IStudentDao {
     private EntityManager entityManager;
 
     public StudentDaoImpl() {
-        entityManager = HibernateUtil.getEm();
+
     }
 
     public StudentDaoImpl(EntityManager entityManager) {
@@ -39,16 +42,19 @@ public class StudentDaoImpl implements IStudentDao {
         }
 
         try {
-            if (getStudent(student) == null) {
+            if (getStudent(student) != null) {
+                throw new EntityAlreadyExistException(student);
+            }
+        } catch (EntityNotFoundException e) {
+            try {
                 entityManager.getTransaction().begin();
                 entityManager.persist(student);
                 entityManager.getTransaction().commit();
+                log.info(" " + student.toString() + LOG_OPERATION_ADD);
                 return true;
-            } else {
-                throw new EntityAlreadyExistException(student);
+            } catch (RuntimeException ex) {
+                log.error(e);
             }
-        } catch (RuntimeException e) {
-            log.error(e);
         }
 
         throw new OperationFailedException(Student.class.getName(), OPERATION_ADD);
@@ -57,15 +63,11 @@ public class StudentDaoImpl implements IStudentDao {
     public boolean removeStudent(long id) throws EntityNotFoundException {
         Student student = getStudentById(id);
 
-        if (student != null) {
-            entityManager.getTransaction().begin();
-            entityManager.remove(student);
-            entityManager.getTransaction().commit();
-            log.info(student.toString() + LOG_OPERATION_REMOVE);
-            return true;
-        }
-
-        throw new EntityNotFoundException(Student.class.getName());
+        entityManager.getTransaction().begin();
+        entityManager.remove(student);
+        entityManager.getTransaction().commit();
+        log.info(student.toString() + LOG_OPERATION_REMOVE);
+        return true;
     }
 
     public boolean updateStudent(Student student) throws ComingNullObjectException, OperationFailedException {
@@ -92,17 +94,17 @@ public class StudentDaoImpl implements IStudentDao {
         throw new OperationFailedException(Student.class.getName(), OPERATION_UPDATE);
     }
 
-    public Student getStudentById(long id) {
+    public Student getStudentById(long id) throws EntityNotFoundException {
         Student student = entityManager.find(Student.class, id);
         if (student != null) {
             return student;
         }
 
         log.info(ERROR_STUDENT_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Student.class.getName());
     }
 
-    public Student getStudent(Student student) {
+    public Student getStudent(Student student) throws EntityNotFoundException {
         List<Student> students = entityManager.createQuery(FIND_STUDENT)
                 .setParameter(NAME, student.getName())
                 .setParameter(GROUP_ID, student.getGroups().getId()).getResultList();
@@ -111,7 +113,7 @@ public class StudentDaoImpl implements IStudentDao {
         }
 
         log.info(ERROR_STUDENT_NOT_FOUND);
-        return null;
+        throw new EntityNotFoundException(Student.class.getName());
     }
 
 
@@ -130,6 +132,7 @@ public class StudentDaoImpl implements IStudentDao {
         return null;
     }
 
+    @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.entityManager = entityManager;
     }

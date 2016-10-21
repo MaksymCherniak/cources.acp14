@@ -43,11 +43,10 @@ public class TSubjectDao {
 
     @After
     public void delete() throws EntityNotFoundException {
-        Subject sub = iSubjectDao.getSubject(subject);
+        try{
+            iSubjectDao.removeSubject(subject.getId());
+        } catch (EntityNotFoundException e) {}
 
-        if (sub != null) {
-            iSubjectDao.removeSubject(sub.getId());
-        }
     }
 
     @Test
@@ -63,13 +62,15 @@ public class TSubjectDao {
     }
 
     @Test
-    public void subjectExistsAfterAdd() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void subjectExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
+
         iSubjectDao.addSubject(subject);
 
         assertNotNull("Subject not found", iSubjectDao.getSubject(subject));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void subjectDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
             , EntityNotFoundException, EntityAlreadyExistException {
         iSubjectDao.addSubject(subject);
@@ -87,7 +88,9 @@ public class TSubjectDao {
     }
 
     @Test
-    public void updateSubjectIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void updateSubjectIsPossible() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
+
         iSubjectDao.addSubject(subject);
 
         updatedSubject = iSubjectDao.getSubject(subject);
@@ -98,7 +101,9 @@ public class TSubjectDao {
     }
 
     @Test
-    public void subjectUpdated() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void subjectUpdated() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
+
         iSubjectDao.addSubject(subject);
 
         updatedSubject = iSubjectDao.getSubject(subject);

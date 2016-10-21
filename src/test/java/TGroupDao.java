@@ -41,12 +41,10 @@ public class TGroupDao {
     }
 
     @After
-    public void delete() throws EntityNotFoundException {
-        Groups g = iGroupDao.getGroup(groups);
-
-        if (g != null) {
-            iGroupDao.removeGroup(g.getId());
-        }
+    public void delete() {
+        try{
+            iGroupDao.removeGroup(groups.getId());
+        } catch (EntityNotFoundException e) {}
     }
 
     @Test
@@ -62,13 +60,14 @@ public class TGroupDao {
     }
 
     @Test
-    public void groupExistsAfterAdd() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void groupExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iGroupDao.addGroup(groups);
 
         assertNotNull("Group not found", iGroupDao.getGroup(groups));
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void groupDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
             , EntityNotFoundException, EntityAlreadyExistException {
 
@@ -87,7 +86,8 @@ public class TGroupDao {
     }
 
     @Test
-    public void updateGroupIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void updateGroupIsPossible() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iGroupDao.addGroup(groups);
 
         Groups newGroup = iGroupDao.getGroup(groups);
@@ -97,7 +97,8 @@ public class TGroupDao {
     }
 
     @Test
-    public void groupUpdated() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void groupUpdated() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
         iGroupDao.addGroup(groups);
 
         Groups newGroup = iGroupDao.getGroup(groups);

@@ -1,24 +1,12 @@
 package week4.home.study.start;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-public class Main extends Application {
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("../view/fxml/main.fxml"));
-        primaryStage.setTitle("Students");
-        primaryStage.setMinWidth(600);
-        primaryStage.setMinHeight(400);
-        primaryStage.setScene(new Scene(root, 300, 275));
-        primaryStage.show();
-    }
+@SpringBootApplication(scanBasePackages = {"week4/home/study"})
+public class Main {
 
     public static void main(String[] args) {
-        launch(args);
+        SpringApplication.run(Main.class, args);
     }
 }

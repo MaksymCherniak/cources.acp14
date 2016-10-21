@@ -44,7 +44,7 @@ public class Groups {
     @Override
     public String toString() {
         return "Groups{" +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 '}';
     }
 

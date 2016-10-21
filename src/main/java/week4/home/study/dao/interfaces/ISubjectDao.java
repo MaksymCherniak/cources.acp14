@@ -15,9 +15,9 @@ public interface ISubjectDao {
 
     boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException;
 
-    Subject getSubject(Subject subject);
+    Subject getSubject(Subject subject) throws EntityNotFoundException;
 
-    Subject getSubjectById(long id);
+    Subject getSubjectById(long id) throws EntityNotFoundException;
 
     List<Subject> getAllSubjects(int from, int quantity);
 }
