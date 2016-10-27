@@ -1,7 +1,7 @@
 package week4.home.study.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import week4.home.study.dao.interfaces.DaoFactory;
 import week4.home.study.dao.interfaces.IGroupDao;
 import week4.home.study.entity.Groups;
 import week4.home.study.exceptions.ComingNullObjectException;
@@ -15,7 +15,8 @@ import static week4.home.study.start.AppStaticValues.*;
 
 @RestController
 public class GroupController {
-    private IGroupDao iGroupDao = DaoFactory.getGroupInstance();
+    @Autowired
+    private IGroupDao iGroupDao;
 
     @RequestMapping(value = "/addGroup", method = RequestMethod.POST)
     @ResponseBody
@@ -30,14 +31,15 @@ public class GroupController {
     @RequestMapping(value = "/getAllGroups", method = RequestMethod.GET)
     @ResponseBody
     public List<Groups> getAllGroups(@RequestParam(name = "from") int from,
-                                     @RequestParam(name = "quantity") int quantity) {
+                                     @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
 
         return iGroupDao.getAllGroups(from, quantity);
     }
 
     @RequestMapping(value = "/updateGroup", method = RequestMethod.POST)
     @ResponseBody
-    public String updateGroup(@RequestBody Groups groups) throws ComingNullObjectException, OperationFailedException {
+    public String updateGroup(@RequestBody Groups groups) throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException {
 
         iGroupDao.updateGroup(groups);
 
@@ -55,7 +57,7 @@ public class GroupController {
         return groups.toString() + LOG_OPERATION_REMOVE;
     }
 
-    @RequestMapping(value = "/getGroup", method = RequestMethod.GET)
+    @RequestMapping(value = "/getGroupByName", method = RequestMethod.GET)
     @ResponseBody
     public Groups getGroup(@RequestParam(name = "name") String name) throws EntityNotFoundException {
 

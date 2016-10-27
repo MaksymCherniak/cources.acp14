@@ -1,8 +1,13 @@
 import org.apache.log4j.Logger;
-import org.junit.*;
-import week4.home.study.dao.HibernateUtil;
-import week4.home.study.dao.impls.mysql.SubjectDaoImpl;
-import week4.home.study.dao.impls.mysql.TeacherDaoImpl;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.dao.interfaces.ITeacherDao;
 import week4.home.study.entity.Subject;
@@ -12,45 +17,35 @@ import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
-import javax.persistence.EntityManager;
-
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
+@ContextConfiguration("classpath:spring/testApplicationConfig.xml")
+@Transactional
 public class TTeacherDao {
     private static Logger log = Logger.getLogger(TTeacherDao.class.getName());
-    private static ITeacherDao iTeacherDao;
-    private static ISubjectDao iSubjectDao;
+    @Autowired
+    private ITeacherDao iTeacherDao;
+    @Autowired
+    private ISubjectDao iSubjectDao;
 
-    private static Subject subject;
+    private Subject subject;
     private Teacher teacher;
     private Teacher updatedTeacher;
 
-    private static EntityManager entityManager;
+    @Before
+    public void initialize() throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException, EntityNotFoundException {
 
-    @BeforeClass
-    public static void initializeConnection() throws OperationFailedException, EntityAlreadyExistException, ComingNullObjectException {
-        entityManager = HibernateUtil.getTestEm();
-        iSubjectDao = new SubjectDaoImpl(entityManager);
-        iTeacherDao = new TeacherDaoImpl(entityManager);
-
+        teacher = new Teacher();
         subject = new Subject();
         subject.setName("Test subject");
         subject.setDescription("Test description");
 
         iSubjectDao.addSubject(subject);
-    }
 
-    @AfterClass
-    public static void shutdownConnection() {
-        entityManager.clear();
-        entityManager.close();
-    }
-
-    @Before
-    public void initialize() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
-        teacher = new Teacher();
         teacher.setName("Test teacher");
         teacher.setExperience(5);
         teacher.setSubject(iSubjectDao.getSubject(subject));
@@ -59,8 +54,9 @@ public class TTeacherDao {
     @After
     public void delete() throws EntityNotFoundException {
         try {
-            iTeacherDao.removeTeacher(teacher.getId());
-        } catch (EntityNotFoundException e) { }
+            iTeacherDao.removeTeacher(iTeacherDao.getTeacher(teacher).getId());
+        } catch (EntityNotFoundException e) {
+        }
     }
 
     @Test
@@ -87,6 +83,7 @@ public class TTeacherDao {
     @Test(expected = EntityNotFoundException.class)
     public void teacherDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
             , EntityNotFoundException, EntityAlreadyExistException {
+
         iTeacherDao.addTeacher(teacher);
 
         iTeacherDao.removeTeacher(iTeacherDao.getTeacher(teacher).getId());
@@ -111,7 +108,7 @@ public class TTeacherDao {
         updatedTeacher.setName("Updated teacher");
         updatedTeacher.setExperience(7);
 
-        assertTrue("Teacher didn't update", iTeacherDao.updateTeacher(updatedTeacher));
+        assertNotNull("Teacher didn't update", iTeacherDao.getTeacher(updatedTeacher));
     }
 
     @Test
@@ -124,8 +121,6 @@ public class TTeacherDao {
         updatedTeacher.setName("Updated teacher");
         updatedTeacher.setExperience(7);
 
-        iTeacherDao.updateTeacher(updatedTeacher);
-
         assertEquals("Teacher didn't update", updatedTeacher, iTeacherDao.getTeacher(updatedTeacher));
     }
 
@@ -137,7 +132,7 @@ public class TTeacherDao {
     }
 
     @Test
-    public void checkGetMaxExperienced() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkGetMaxExperienced() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException, EntityNotFoundException {
         iTeacherDao.addTeacher(teacher);
 
         assertThat(iTeacherDao.getMaxExperiencedTeachers(0, 10).size(), is(1));
@@ -152,6 +147,6 @@ public class TTeacherDao {
 
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfTeacherNotExists() throws EntityNotFoundException {
-        iTeacherDao.removeTeacher(teacher.getId());
+        iTeacherDao.removeTeacher(iTeacherDao.getTeacher(teacher).getId());
     }
 }

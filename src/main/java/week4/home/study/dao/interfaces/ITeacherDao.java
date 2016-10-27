@@ -11,13 +11,13 @@ import java.util.List;
 public interface ITeacherDao {
     boolean addTeacher(Teacher teacher) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
-    boolean removeTeacher(long id) throws EntityNotFoundException;
+    boolean removeTeacher(long id);
 
-    boolean updateTeacher(Teacher teacher) throws ComingNullObjectException, OperationFailedException;
+    boolean updateTeacher(Teacher teacher) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
     Teacher getTeacher(Teacher teacher) throws EntityNotFoundException;
 
-    Teacher getTeacherById(long id) throws EntityNotFoundException;
+    Teacher getTeacherById(long id);
 
     List<Teacher> getAllTeachers(int from, int quantity);
 

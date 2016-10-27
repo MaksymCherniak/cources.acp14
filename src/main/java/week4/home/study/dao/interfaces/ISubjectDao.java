@@ -11,13 +11,13 @@ import java.util.List;
 public interface ISubjectDao {
     boolean addSubject(Subject subject) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
-    boolean removeSubject(long id) throws EntityNotFoundException;
+    boolean removeSubject(long id);
 
-    boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException;
+    boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
     Subject getSubject(Subject subject) throws EntityNotFoundException;
 
-    Subject getSubjectById(long id) throws EntityNotFoundException;
+    Subject getSubjectById(long id);
 
-    List<Subject> getAllSubjects(int from, int quantity);
+    List<Subject> getAllSubjects(int from, int quantity) throws EntityNotFoundException;
 }

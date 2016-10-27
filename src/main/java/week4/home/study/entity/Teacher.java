@@ -1,6 +1,7 @@
 package week4.home.study.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "teachers")
@@ -64,29 +65,17 @@ public class Teacher {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        Teacher other = (Teacher) obj;
-
-        return name.equals(other.getName()) && id == other.getId() && experience == other.getExperience()
-                && subject.equals(other.getSubject());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Teacher teacher = (Teacher) o;
+        return experience == teacher.experience &&
+                Objects.equals(name, teacher.name) &&
+                Objects.equals(subject, teacher.subject);
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + experience;
-        result = 31 * result + (int) (subject.getId() ^ (subject.getId() >>> 32));
-        return result;
+        return Objects.hash(name, experience, subject);
     }
 }

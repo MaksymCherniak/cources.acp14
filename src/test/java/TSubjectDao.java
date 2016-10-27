@@ -1,6 +1,12 @@
-import org.junit.*;
-import week4.home.study.dao.HibernateUtil;
-import week4.home.study.dao.impls.mysql.SubjectDaoImpl;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.entity.Subject;
 import week4.home.study.exceptions.ComingNullObjectException;
@@ -8,31 +14,22 @@ import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
-import javax.persistence.EntityManager;
 import java.util.logging.Logger;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
+@ContextConfiguration("classpath:spring/testApplicationConfig.xml")
+@Transactional
 public class TSubjectDao {
     private static Logger log = Logger.getLogger(TSubjectDao.class.getName());
-    private static ISubjectDao iSubjectDao;
+    @Autowired
+    private ISubjectDao iSubjectDao;
+
     private Subject subject;
-    private Subject updatedSubject;
-
-    private static EntityManager entityManager;
-
-    @BeforeClass
-    public static void initializeConnection() {
-        entityManager = HibernateUtil.getTestEm();
-        iSubjectDao = new SubjectDaoImpl(entityManager);
-    }
-
-    @AfterClass
-    public static void shutdownConnection() {
-        entityManager.clear();
-        entityManager.close();
-    }
+    private Subject updated;
 
     @Before
     public void initialize() {
@@ -43,10 +40,10 @@ public class TSubjectDao {
 
     @After
     public void delete() throws EntityNotFoundException {
-        try{
-            iSubjectDao.removeSubject(subject.getId());
-        } catch (EntityNotFoundException e) {}
-
+        try {
+            iSubjectDao.removeSubject(iSubjectDao.getSubject(subject).getId());
+        } catch (EntityNotFoundException e) {
+        }
     }
 
     @Test
@@ -73,6 +70,7 @@ public class TSubjectDao {
     @Test(expected = EntityNotFoundException.class)
     public void subjectDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
             , EntityNotFoundException, EntityAlreadyExistException {
+
         iSubjectDao.addSubject(subject);
 
         iSubjectDao.removeSubject(iSubjectDao.getSubject(subject).getId());
@@ -81,7 +79,9 @@ public class TSubjectDao {
     }
 
     @Test
-    public void checkTotalSubjects() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkTotalSubjects() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException
+            , EntityNotFoundException {
+
         iSubjectDao.addSubject(subject);
 
         assertThat(iSubjectDao.getAllSubjects(0, 10).size(), is(1));
@@ -93,11 +93,13 @@ public class TSubjectDao {
 
         iSubjectDao.addSubject(subject);
 
-        updatedSubject = iSubjectDao.getSubject(subject);
-        updatedSubject.setName("Updated subject");
-        updatedSubject.setDescription("Updated description");
+        updated = iSubjectDao.getSubject(subject);
+        updated.setName("Updated subject");
+        updated.setDescription("Updated description");
 
-        assertTrue("Subject didn't update", iSubjectDao.updateSubject(updatedSubject));
+        assertNotNull("Subject didn't update", iSubjectDao.getSubject(updated));
+
+        iSubjectDao.removeSubject(iSubjectDao.getSubject(updated).getId());
     }
 
     @Test
@@ -106,17 +108,17 @@ public class TSubjectDao {
 
         iSubjectDao.addSubject(subject);
 
-        updatedSubject = iSubjectDao.getSubject(subject);
-        updatedSubject.setName("Updated subject");
-        updatedSubject.setDescription("Updated description");
+        updated = iSubjectDao.getSubject(subject);
+        updated.setName("Updated subject");
+        updated.setDescription("Updated description");
 
-        iSubjectDao.updateSubject(updatedSubject);
+        assertEquals("Subject didn't update", updated, iSubjectDao.getSubject(updated));
 
-        assertEquals("Subject didn't update", updatedSubject, iSubjectDao.getSubject(updatedSubject));
+        iSubjectDao.removeSubject(iSubjectDao.getSubject(updated).getId());
     }
 
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfSubjectNotExists() throws EntityNotFoundException {
-        iSubjectDao.removeSubject(subject.getId());
+        iSubjectDao.removeSubject(iSubjectDao.getSubject(subject).getId());
     }
 }

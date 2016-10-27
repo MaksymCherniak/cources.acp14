@@ -1,7 +1,7 @@
 package week4.home.study.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import week4.home.study.dao.interfaces.DaoFactory;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.entity.Subject;
 import week4.home.study.exceptions.ComingNullObjectException;
@@ -15,7 +15,8 @@ import static week4.home.study.start.AppStaticValues.*;
 
 @RestController
 public class SubjectController {
-    private ISubjectDao iSubjectDao = DaoFactory.getSubjectInstance();
+    @Autowired
+    private ISubjectDao iSubjectDao;
 
     @RequestMapping(value = "/addSubject", method = RequestMethod.POST)
     @ResponseBody
@@ -30,14 +31,15 @@ public class SubjectController {
     @RequestMapping(value = "/getAllSubjects", method = RequestMethod.GET)
     @ResponseBody
     public List<Subject> getAllSubjects(@RequestParam(name = "from") int from,
-                                        @RequestParam(name = "quantity") int quantity) {
+                                        @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
 
         return iSubjectDao.getAllSubjects(from, quantity);
     }
 
     @RequestMapping(value = "/updateSubject", method = RequestMethod.POST)
     @ResponseBody
-    public String updateSubject(@RequestBody Subject subject) throws ComingNullObjectException, OperationFailedException {
+    public String updateSubject(@RequestBody Subject subject) throws ComingNullObjectException, OperationFailedException
+            , EntityAlreadyExistException {
 
         iSubjectDao.updateSubject(subject);
 

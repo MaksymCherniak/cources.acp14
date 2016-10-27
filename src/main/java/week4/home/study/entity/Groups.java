@@ -1,6 +1,7 @@
 package week4.home.study.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -10,7 +11,7 @@ public class Groups {
     @Column(name = "group_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
     @OneToMany(mappedBy = "groups")
     private Set<Student> students;
@@ -49,19 +50,17 @@ public class Groups {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Groups groups = (Groups) o;
+        return Objects.equals(name, groups.name) &&
+                Objects.equals(students, groups.students) &&
+                Objects.equals(subjects, groups.subjects);
+    }
 
-        Groups other = (Groups) obj;
-
-        return name.equals(other.getName()) && id == other.getId();
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, students, subjects);
     }
 }

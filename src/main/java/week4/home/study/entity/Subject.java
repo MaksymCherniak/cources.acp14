@@ -1,6 +1,7 @@
 package week4.home.study.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -56,19 +57,18 @@ public class Subject {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Subject subject = (Subject) o;
+        return Objects.equals(name, subject.name) &&
+                Objects.equals(description, subject.description) &&
+                Objects.equals(teachers, subject.teachers) &&
+                Objects.equals(groupses, subject.groupses);
+    }
 
-        Subject other = (Subject) obj;
-
-        return name.equals(other.getName()) && id == other.getId() && description.equals(other.getDescription());
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, teachers, groupses);
     }
 }

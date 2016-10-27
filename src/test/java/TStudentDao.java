@@ -1,8 +1,13 @@
 import org.apache.log4j.Logger;
-import org.junit.*;
-import week4.home.study.dao.HibernateUtil;
-import week4.home.study.dao.impls.mysql.GroupDaoImpl;
-import week4.home.study.dao.impls.mysql.StudentDaoImpl;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 import week4.home.study.dao.interfaces.IGroupDao;
 import week4.home.study.dao.interfaces.IStudentDao;
 import week4.home.study.entity.Groups;
@@ -12,53 +17,44 @@ import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
 import week4.home.study.exceptions.OperationFailedException;
 
-import javax.persistence.EntityManager;
-
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
+@ContextConfiguration("classpath:spring/testApplicationConfig.xml")
+@Transactional
 public class TStudentDao {
     private static Logger log = Logger.getLogger(TStudentDao.class.getName());
-    private static IStudentDao iStudentDao;
-    private static IGroupDao iGroupDao;
+    @Autowired
+    private IStudentDao iStudentDao;
+    @Autowired
+    private IGroupDao iGroupDao;
 
     private Student student;
-    private static Groups groups;
-
-    private static EntityManager entityManager;
-
-    @BeforeClass
-    public static void initializeConnection() throws OperationFailedException, EntityAlreadyExistException, ComingNullObjectException {
-        entityManager = HibernateUtil.getTestEm();
-        iStudentDao = new StudentDaoImpl(entityManager);
-        iGroupDao = new GroupDaoImpl(entityManager);
-
-        groups = new Groups();
-        groups.setName("Test group");
-
-        iGroupDao.addGroup(groups);
-    }
-
-    @AfterClass
-    public static void shutdownConnection() {
-        entityManager.clear();
-        entityManager.close();
-    }
+    private Student updated;
+    private Groups groups;
 
     @Before
     public void initialize() throws ComingNullObjectException, OperationFailedException
             , EntityAlreadyExistException, EntityNotFoundException {
+
         student = new Student();
-        student.setName("Test students");
+        groups = new Groups();
+
+        groups.setName("Test group");
+        iGroupDao.addGroup(groups);
+
+        student.setName("Test student");
         student.setGroups(iGroupDao.getGroup(groups));
     }
 
     @After
-    public void delete() throws EntityNotFoundException {
-        try{
-            iStudentDao.removeStudent(student.getId());
-        } catch (EntityNotFoundException e) {}
-
+    public void delete() {
+        try {
+            iStudentDao.removeStudent(iStudentDao.getStudent(student).getId());
+        } catch (EntityNotFoundException e) {
+        }
     }
 
     @Test
@@ -92,7 +88,9 @@ public class TStudentDao {
     }
 
     @Test
-    public void checkTotalStudents()throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkTotalStudents() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException
+            , EntityNotFoundException {
+
         iStudentDao.addStudent(student);
 
         assertThat(iStudentDao.getAllStudents(0, 10).size(), is(1));
@@ -101,30 +99,35 @@ public class TStudentDao {
     @Test
     public void updateStudentIsPossible() throws ComingNullObjectException, OperationFailedException
             , EntityAlreadyExistException, EntityNotFoundException {
+
         iStudentDao.addStudent(student);
 
-        Student newStudent = iStudentDao.getStudent(student);
-        newStudent.setName("Updated student");
+        updated = iStudentDao.getStudent(student);
+        updated.setName("Updated student");
 
-        assertTrue("Student didn't update", iStudentDao.updateStudent(newStudent));
+        assertNotNull("Student didn't update", iStudentDao.getStudent(updated));
+
+        iStudentDao.removeStudent(iStudentDao.getStudent(updated).getId());
     }
 
     @Test
     public void studentUpdated() throws ComingNullObjectException, OperationFailedException
             , EntityAlreadyExistException, EntityNotFoundException {
+
         iStudentDao.addStudent(student);
 
-        Student newStudent = iStudentDao.getStudent(student);
-        newStudent.setName("Updated student");
+        updated = iStudentDao.getStudent(student);
+        updated.setName("Updated student");
 
-        iStudentDao.updateStudent(newStudent);
+        assertEquals("Student didn't update", updated, iStudentDao.getStudent(updated));
 
-        assertEquals("Student didn't update", newStudent, iStudentDao.getStudent(newStudent));
+        iStudentDao.removeStudent(iStudentDao.getStudent(updated).getId());
     }
 
     @Test
     public void checkGetStudentsByGroup() throws ComingNullObjectException, OperationFailedException
             , EntityAlreadyExistException, EntityNotFoundException {
+
         iStudentDao.addStudent(student);
 
         assertThat(iStudentDao.getStudentsByGroup(iGroupDao.getGroup(groups), 10).size(), is(1));
@@ -132,6 +135,6 @@ public class TStudentDao {
 
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfStudentNotExists() throws EntityNotFoundException {
-        iStudentDao.removeStudent(student.getId());
+        iStudentDao.removeStudent(iStudentDao.getStudent(student).getId());
     }
 }

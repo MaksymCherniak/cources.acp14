@@ -11,13 +11,13 @@ import java.util.List;
 public interface IGroupDao {
     boolean addGroup(Groups groups) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
-    boolean removeGroup(long id) throws EntityNotFoundException;
+    boolean removeGroup(long id);
 
-    boolean updateGroup(Groups groups) throws ComingNullObjectException, OperationFailedException;
+    boolean updateGroup(Groups groups) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
 
     Groups getGroup(Groups groups) throws EntityNotFoundException;
 
-    Groups getGroupById(long id) throws EntityNotFoundException;
+    Groups getGroupById(long id);
 
-    List<Groups> getAllGroups(int from, int quantity);
+    List<Groups> getAllGroups(int from, int quantity) throws EntityNotFoundException;
 }
