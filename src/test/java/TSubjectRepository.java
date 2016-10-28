@@ -37,7 +37,7 @@ public class TSubjectRepository {
 
     @Test
     public void noSubjectEntriesFoundIfNotInDatabase() {
-        assertNull("Subject which isn't in database exists", subjectRepository.getSubject("name", "description"));
+        assertNull("Subject which isn't in database exists", subjectRepository.getSubject(subject.getName(), subject.getDescription()));
     }
 
     @Test

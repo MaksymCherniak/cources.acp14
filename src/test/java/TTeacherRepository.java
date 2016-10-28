@@ -52,7 +52,8 @@ public class TTeacherRepository {
 
     @Test
     public void noTeacherEntriesFoundIfNotInDatabase() {
-        assertNull("Teacher which isn't in database exists", teacherRepository.getTeacher("name", 1, 1));
+        assertNull("Teacher which isn't in database exists", teacherRepository.getTeacher(teacher.getName(),
+                teacher.getExperience(), teacher.getSubject().getId()));
     }
 
     @Test

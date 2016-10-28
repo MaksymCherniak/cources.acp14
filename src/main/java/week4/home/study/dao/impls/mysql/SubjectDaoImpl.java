@@ -76,6 +76,16 @@ public class SubjectDaoImpl implements ISubjectDao {
         throw new EntityNotFoundException(Subject.class.getName());
     }
 
+    public Subject getSubjectByName(String name) throws EntityNotFoundException {
+        Subject result = subjectRepository.getSubject(name);
+        if (result != null) {
+            return result;
+        }
+
+        log.info(ERROR_SUBJECT_NOT_FOUND);
+        throw new EntityNotFoundException(Subject.class.getName());
+    }
+
     public Subject getSubjectById(long id) {
         return subjectRepository.findOne(id);
     }

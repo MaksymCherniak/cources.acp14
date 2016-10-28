@@ -1,6 +1,8 @@
 package week4.home.study.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.entity.Subject;
@@ -25,7 +27,8 @@ public class SubjectController {
 
         iSubjectDao.addSubject(subject);
 
-        return subject.toString() + LOG_OPERATION_ADD;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + subject.toString() + LOG_OPERATION_ADD;
     }
 
     @RequestMapping(value = "/getAllSubjects", method = RequestMethod.GET)
@@ -43,7 +46,8 @@ public class SubjectController {
 
         iSubjectDao.updateSubject(subject);
 
-        return subject.toString() + LOG_OPERATION_UPDATE;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + subject.toString() + LOG_OPERATION_UPDATE;
     }
 
     @RequestMapping(value = "/removeSubject", method = RequestMethod.POST)
@@ -54,7 +58,8 @@ public class SubjectController {
 
         iSubjectDao.removeSubject(id);
 
-        return subject.toString() + LOG_OPERATION_REMOVE;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + subject.toString() + LOG_OPERATION_REMOVE;
     }
 
     @RequestMapping(value = "/getSubject", method = RequestMethod.GET)

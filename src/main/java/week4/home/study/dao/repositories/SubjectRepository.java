@@ -14,6 +14,9 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
     Subject getSubject(@Param("name") String name,
                        @Param("description") String description);
 
+    @Query("SELECT s FROM Subject s WHERE s.name = :name")
+    Subject getSubject(@Param("name") String name);
+
     @Modifying
     @Transactional
     @Query("UPDATE Subject c set c.name=:name, c.description=:description WHERE subject_id LIKE :subject_id")

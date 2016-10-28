@@ -51,7 +51,7 @@ public class TStudentRepository {
 
     @Test
     public void noStudentEntriesFoundIfNotInDatabase() {
-        assertNull("Student which isn't in database exists", studentRepository.getStudent("name", 1));
+        assertNull("Student which isn't in database exists", studentRepository.getStudent(student.getName(), student.getGroups().getId()));
     }
 
     @Test

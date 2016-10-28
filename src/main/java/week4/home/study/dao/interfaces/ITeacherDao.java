@@ -17,7 +17,11 @@ public interface ITeacherDao {
 
     Teacher getTeacher(Teacher teacher) throws EntityNotFoundException;
 
+    Teacher getTeacherByName(String name) throws EntityNotFoundException;
+
     Teacher getTeacherById(long id);
+
+    List<Teacher> getTeachersBySubject(String subjectName);
 
     List<Teacher> getAllTeachers(int from, int quantity);
 

@@ -17,6 +17,8 @@ public interface ISubjectDao {
 
     Subject getSubject(Subject subject) throws EntityNotFoundException;
 
+    Subject getSubjectByName(String name) throws EntityNotFoundException;
+
     Subject getSubjectById(long id);
 
     List<Subject> getAllSubjects(int from, int quantity) throws EntityNotFoundException;

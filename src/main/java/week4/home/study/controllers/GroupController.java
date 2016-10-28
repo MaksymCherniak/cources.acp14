@@ -1,6 +1,8 @@
 package week4.home.study.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import week4.home.study.dao.interfaces.IGroupDao;
 import week4.home.study.entity.Groups;
@@ -25,7 +27,8 @@ public class GroupController {
 
         iGroupDao.addGroup(groups);
 
-        return groups.toString() + LOG_OPERATION_ADD;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + groups.toString() + LOG_OPERATION_ADD;
     }
 
     @RequestMapping(value = "/getAllGroups", method = RequestMethod.GET)
@@ -43,7 +46,8 @@ public class GroupController {
 
         iGroupDao.updateGroup(groups);
 
-        return groups.toString() + LOG_OPERATION_UPDATE;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + groups.toString() + LOG_OPERATION_UPDATE;
     }
 
     @RequestMapping(value = "/removeGroup", method = RequestMethod.POST)
@@ -54,7 +58,8 @@ public class GroupController {
 
         iGroupDao.removeGroup(id);
 
-        return groups.toString() + LOG_OPERATION_REMOVE;
+        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
+                "\n" + groups.toString() + LOG_OPERATION_REMOVE;
     }
 
     @RequestMapping(value = "/getGroupByName", method = RequestMethod.GET)

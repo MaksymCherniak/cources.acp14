@@ -36,7 +36,7 @@ public class TGroupRepository {
 
     @Test
     public void noGroupEntriesFoundIfNotInDatabase() {
-        assertNull("Group which isn't in database exists", groupRepository.getGroupByName("newName"));
+        assertNull("Group which isn't in database exists", groupRepository.getGroupByName(groups.getName()));
     }
 
     @Test

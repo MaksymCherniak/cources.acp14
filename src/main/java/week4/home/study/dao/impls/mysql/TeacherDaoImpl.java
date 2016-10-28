@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import week4.home.study.dao.interfaces.ITeacherDao;
+import week4.home.study.dao.repositories.SubjectRepository;
 import week4.home.study.dao.repositories.TeacherRepository;
 import week4.home.study.entity.Teacher;
 import week4.home.study.exceptions.ComingNullObjectException;
@@ -19,6 +20,8 @@ public class TeacherDaoImpl implements ITeacherDao {
     private static Logger log = Logger.getLogger(TeacherDaoImpl.class.getName());
     @Autowired
     private TeacherRepository teacherRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
 
     public TeacherDaoImpl() {
     }
@@ -73,8 +76,22 @@ public class TeacherDaoImpl implements ITeacherDao {
         throw new EntityNotFoundException(Teacher.class.getName());
     }
 
+    public Teacher getTeacherByName(String name) throws EntityNotFoundException {
+        Teacher result = teacherRepository.getTeacherByName(name);
+        if (result != null) {
+            return result;
+        }
+
+        log.info(ERROR_TEACHER_NOT_FOUND);
+        throw new EntityNotFoundException(Teacher.class.getName());
+    }
+
     public Teacher getTeacherById(long id) {
         return teacherRepository.findOne(id);
+    }
+
+    public List<Teacher> getTeachersBySubject(String subjectName) {
+        return teacherRepository.getTeachersBySubject(subjectRepository.getSubject(subjectName).getId());
     }
 
     public List<Teacher> getAllTeachers(int from, int quantity) {

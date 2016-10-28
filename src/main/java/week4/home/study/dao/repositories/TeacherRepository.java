@@ -17,6 +17,9 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
                        @Param("experience") int experience,
                        @Param("subject_id") long subject_id);
 
+    @Query("SELECT s FROM Teacher s WHERE s.name = :name")
+    Teacher getTeacherByName(@Param("name") String name);
+
     @Query("SELECT g FROM Teacher g WHERE subject_id LIKE :subject_id")
     List<Teacher> getTeachersBySubject(@Param("subject_id") long subject_id);
 
