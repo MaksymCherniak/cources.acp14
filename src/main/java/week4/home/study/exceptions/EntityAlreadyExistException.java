@@ -9,4 +9,8 @@ public class EntityAlreadyExistException extends Exception {
     public EntityAlreadyExistException(Object entity) {
         super(entity.toString() + "\nAlready exist");
     }
+
+    public EntityAlreadyExistException(Object first, Object second) {
+        super(first.toString() + " already has " + second.toString()) ;
+    }
 }

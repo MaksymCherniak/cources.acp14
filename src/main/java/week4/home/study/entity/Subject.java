@@ -1,6 +1,7 @@
 package week4.home.study.entity;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,14 +12,14 @@ public class Subject {
     @Column(name = "subject_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
     @Column(name = "description")
     private String description;
-    @OneToMany(mappedBy = "subject")
-    private Set<Teacher> teachers;
-    @ManyToMany(mappedBy="subjects")
-    private Set<Groups> groupses;
+    @OneToMany(mappedBy = "subject", fetch = FetchType.EAGER)
+    private List<Teacher> teachers;
+    @ManyToMany(mappedBy="subjects", fetch = FetchType.EAGER)
+    private List<Groups> groupses;
 
     public Subject() {
     }
@@ -48,6 +49,22 @@ public class Subject {
         this.description = description;
     }
 
+    public List<Teacher> getTeachers() {
+        return teachers;
+    }
+
+    public void setTeachers(List<Teacher> teachers) {
+        this.teachers = teachers;
+    }
+
+    public List<Groups> getGroupses() {
+        return groupses;
+    }
+
+    public void setGroupses(List<Groups> groupses) {
+        this.groupses = groupses;
+    }
+
     @Override
     public String toString() {
         return "Subject{" +
@@ -60,15 +77,16 @@ public class Subject {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         Subject subject = (Subject) o;
-        return Objects.equals(name, subject.name) &&
-                Objects.equals(description, subject.description) &&
-                Objects.equals(teachers, subject.teachers) &&
-                Objects.equals(groupses, subject.groupses);
+
+        if (id != subject.id) return false;
+        if (!name.equals(subject.name)) return false;
+        return description.equals(subject.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, teachers, groupses);
+        return Objects.hash(name, description);
     }
 }

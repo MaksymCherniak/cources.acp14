@@ -10,15 +10,20 @@ public class Teacher {
     @Column(name = "teacher_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
     @Column(name = "experience")
     private int experience;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
     public Teacher() {
+    }
+
+    public Teacher(String name, int experience) {
+        this.name = name;
+        this.experience = experience;
     }
 
     public Teacher(String name, int experience, Subject subject) {

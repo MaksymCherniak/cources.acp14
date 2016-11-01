@@ -1,5 +1,7 @@
 package week4.home.study.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -10,13 +12,18 @@ public class Student {
     @Column(name = "student_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     private String name;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Groups groups;
 
     public Student() {
+    }
+
+    public Student(String name) {
+        this.name = name;
     }
 
     public Student(String name, Groups groups) {

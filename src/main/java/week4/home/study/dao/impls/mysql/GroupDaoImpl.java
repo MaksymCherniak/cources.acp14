@@ -9,8 +9,8 @@ import week4.home.study.entity.Groups;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static week4.home.study.start.AppStaticValues.*;
@@ -23,8 +23,8 @@ public class GroupDaoImpl implements IGroupDao {
     public GroupDaoImpl() {
     }
 
-    public boolean addGroup(Groups groups) throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException {
+    @Override
+    public boolean addGroup(Groups groups) throws ComingNullObjectException, EntityAlreadyExistException {
 
         if (groups == null || groups.getName() == null) {
             throw new ComingNullObjectException(Groups.class.getName(), OPERATION_UPDATE);
@@ -34,14 +34,13 @@ public class GroupDaoImpl implements IGroupDao {
             throw new EntityAlreadyExistException(groups);
         }
 
-        if (groupRepository.saveAndFlush(groups) != null) {
-            log.info(groups.toString() + LOG_OPERATION_ADD);
-            return true;
-        }
+        groupRepository.save(groups);
 
-        throw new OperationFailedException(Groups.class.getName(), OPERATION_ADD);
+        log.info(groups.toString() + LOG_OPERATION_ADD);
+        return true;
     }
 
+    @Override
     public boolean removeGroup(long id) {
         Groups groups = getGroupById(id);
 
@@ -51,8 +50,21 @@ public class GroupDaoImpl implements IGroupDao {
         return true;
     }
 
-    public boolean updateGroup(Groups groups) throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException {
+    @Override
+    public boolean updateAll(Groups groups) throws ComingNullObjectException {
+
+        if (groups == null || groups.getName() == null) {
+            throw new ComingNullObjectException(Groups.class.getName(), OPERATION_UPDATE);
+        }
+
+        groupRepository.saveAndFlush(groups);
+
+        log.info(groups.toString() + LOG_OPERATION_UPDATE);
+        return true;
+    }
+
+    @Override
+    public boolean updateGroup(Groups groups) throws ComingNullObjectException, EntityAlreadyExistException {
 
         if (groups == null || groups.getName() == null) {
             throw new ComingNullObjectException(Groups.class.getName(), OPERATION_UPDATE);
@@ -63,10 +75,12 @@ public class GroupDaoImpl implements IGroupDao {
         }
 
         groupRepository.updateGroup(groups.getName(), groups.getId());
+
         log.info(groups.toString() + LOG_OPERATION_UPDATE);
         return true;
     }
 
+    @Override
     public Groups getGroup(Groups groups) throws EntityNotFoundException {
         Groups result = groupRepository.getGroupByName(groups.getName());
         if (result != null) {
@@ -77,13 +91,50 @@ public class GroupDaoImpl implements IGroupDao {
         throw new EntityNotFoundException(Groups.class.getSimpleName());
     }
 
+    @Override
     public Groups getGroupById(long id) {
         return groupRepository.findOne(id);
     }
 
+    @Override
     public List<Groups> getAllGroups(int from, int quantity) throws EntityNotFoundException {
-        List<Groups> groupsList = groupRepository.findAll(new PageRequest(from, quantity)).getContent();
-        log.info(groupsList.size());
+        return getAllGroups(ALL, null, from, quantity);
+    }
+
+    @Override
+    public List<Groups> getGroupsLike(String name, int from, int quantity) throws EntityNotFoundException {
+        return getAllGroups(NAME, name, from, quantity);
+    }
+
+    @Override
+    public List<Groups> getGroupsBySubject(String subject, int from, int quantity) throws EntityNotFoundException {
+        return getAllGroups(SUBJECT, subject, from, quantity);
+    }
+
+    /**
+     * @param operation(String) - ALL - for getAllGroups() method
+     *                          - NAME - for getGroupsLike() method
+     *                          - SUBJECT - for getGroupsBySubject() method
+     * @param param(String)     - name - group name, for NAME operation
+     *                          - subject - subject name, for SUBJECT operation
+     * @param from(int)         the starting row of entries returning
+     * @param quantity(int)     the total number of entries returning
+     * @return List of groups
+     * @throws EntityNotFoundException
+     */
+    private List<Groups> getAllGroups(String operation, String param, int from, int quantity) throws EntityNotFoundException {
+        List<Groups> groupsList = new ArrayList<>();
+        switch (operation) {
+            case ALL:
+                groupsList = groupRepository.findAll(new PageRequest(from, quantity)).getContent();
+                break;
+            case NAME:
+                groupsList = groupRepository.getGroupsLike(param, new PageRequest(from, quantity));
+                break;
+            case SUBJECT:
+                groupsList = groupRepository.getGroupsBySubject(param, new PageRequest(from, quantity));
+                break;
+        }
 
         if (groupsList.size() != 0) {
             return groupsList;

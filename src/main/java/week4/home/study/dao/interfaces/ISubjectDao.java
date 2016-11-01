@@ -4,16 +4,15 @@ import week4.home.study.entity.Subject;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
 
 import java.util.List;
 
 public interface ISubjectDao {
-    boolean addSubject(Subject subject) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
+    boolean addSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException;
 
     boolean removeSubject(long id);
 
-    boolean updateSubject(Subject subject) throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException;
+    boolean updateSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException;
 
     Subject getSubject(Subject subject) throws EntityNotFoundException;
 
@@ -22,4 +21,6 @@ public interface ISubjectDao {
     Subject getSubjectById(long id);
 
     List<Subject> getAllSubjects(int from, int quantity) throws EntityNotFoundException;
+
+    List<Subject> getAllSubjectsByNameLike(String name, int from, int quantity) throws EntityNotFoundException;
 }
