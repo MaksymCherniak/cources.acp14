@@ -1,3 +1,5 @@
+package dao;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +17,6 @@ import week4.home.study.entity.Teacher;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -36,8 +37,7 @@ public class TTeacherDao {
     private Teacher updatedTeacher;
 
     @Before
-    public void initialize() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void initialize() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         teacher = new Teacher();
         subject = new Subject();
@@ -60,20 +60,19 @@ public class TTeacherDao {
     }
 
     @Test
-    public void addTeacherIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addTeacherIsPossible() throws ComingNullObjectException, EntityAlreadyExistException {
         assertTrue("Teacher didn't add", iTeacherDao.addTeacher(teacher));
     }
 
     @Test(expected = EntityAlreadyExistException.class)
-    public void addDuplicateTeacherIsImpossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addDuplicateTeacherIsImpossible() throws ComingNullObjectException, EntityAlreadyExistException {
         iTeacherDao.addTeacher(teacher);
 
         iTeacherDao.addTeacher(teacher);
     }
 
     @Test
-    public void teacherExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void teacherExistsAfterAdd() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iTeacherDao.addTeacher(teacher);
 
@@ -81,8 +80,7 @@ public class TTeacherDao {
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void teacherDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
-            , EntityNotFoundException, EntityAlreadyExistException {
+    public void teacherDoesNotExistAfterRemove() throws ComingNullObjectException, EntityNotFoundException, EntityAlreadyExistException {
 
         iTeacherDao.addTeacher(teacher);
 
@@ -92,15 +90,14 @@ public class TTeacherDao {
     }
 
     @Test
-    public void checkTotalTeachers() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkTotalTeachers() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
         iTeacherDao.addTeacher(teacher);
 
         assertThat(iTeacherDao.getAllTeachers(0, 10).size(), is(1));
     }
 
     @Test
-    public void updateTeacherIsPossible() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void updateTeacherIsPossible() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iTeacherDao.addTeacher(teacher);
 
@@ -112,8 +109,7 @@ public class TTeacherDao {
     }
 
     @Test
-    public void teacherUpdated() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void teacherUpdated() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iTeacherDao.addTeacher(teacher);
 
@@ -125,21 +121,21 @@ public class TTeacherDao {
     }
 
     @Test
-    public void checkGetTeachersByExperience() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkGetTeachersByExperience() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
         iTeacherDao.addTeacher(teacher);
 
         assertThat(iTeacherDao.getTeacherByExperience(3, 0, 10).size(), is(1));
     }
 
     @Test
-    public void checkGetMaxExperienced() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException, EntityNotFoundException {
+    public void checkGetMaxExperienced() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
         iTeacherDao.addTeacher(teacher);
 
         assertThat(iTeacherDao.getMaxExperiencedTeachers(0, 10).size(), is(1));
     }
 
     @Test
-    public void checkGetMinExperienced() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void checkGetMinExperienced() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
         iTeacherDao.addTeacher(teacher);
 
         assertThat(iTeacherDao.getMinExperiencedTeachers(0, 10).size(), is(1));
@@ -148,5 +144,23 @@ public class TTeacherDao {
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfTeacherNotExists() throws EntityNotFoundException {
         iTeacherDao.removeTeacher(iTeacherDao.getTeacher(teacher).getId());
+    }
+
+    @Test
+    public void checkGetTeacherByName() throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException {
+
+        iTeacherDao.addTeacher(teacher);
+
+        assertNotNull("Teacher not found", iTeacherDao.getTeacherByName(teacher.getName()));
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void addTeacherIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+        iTeacherDao.addTeacher(null);
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void updateTeacherIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+        iTeacherDao.updateTeacher(null);
     }
 }

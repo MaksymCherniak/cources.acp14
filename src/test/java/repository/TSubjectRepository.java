@@ -1,16 +1,30 @@
+package repository;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import week4.home.study.dao.repositories.GroupRepository;
 import week4.home.study.dao.repositories.SubjectRepository;
+import week4.home.study.dao.repositories.TeacherRepository;
+import week4.home.study.entity.Groups;
+import week4.home.study.entity.Student;
 import week4.home.study.entity.Subject;
+import week4.home.study.entity.Teacher;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
@@ -20,6 +34,10 @@ public class TSubjectRepository {
     private Subject updated;
     @Autowired
     private SubjectRepository subjectRepository;
+    @Autowired
+    private GroupRepository groupRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
 
     @Before
     public void initialize() {
@@ -85,5 +103,21 @@ public class TSubjectRepository {
         assertNull("Old subject exists", subjectRepository.getSubject(subject.getName(), subject.getDescription()));
 
         subjectRepository.delete(subjectRepository.getSubject(updated.getName(), updated.getDescription()).getId());
+    }
+
+    @Test
+    public void checkGetSubjectByName() {
+        subjectRepository.save(subject);
+
+        assertNotNull("Subject not found", subjectRepository.getSubjectByName(subject.getName()));
+    }
+
+    @Test
+    public void getSubjectsByNameLikeTesting() {
+        subjectRepository.save(subject);
+
+        subjectRepository.save(new Subject("name", "description"));
+
+        assertThat(subjectRepository.getAllSubjectsByNameLike("%name%", new PageRequest(0, 10)).size(), is(2));
     }
 }

@@ -1,9 +1,12 @@
+package repository;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import week4.home.study.dao.repositories.SubjectRepository;
@@ -115,27 +118,34 @@ public class TTeacherRepository {
         teacherRepository.save(teacher);
 
         assertThat(teacherRepository.getTeachersBySubject(subjectRepository.getSubject(subject.getName(),
-                subject.getDescription()).getId()).size(), is(1));
+                subject.getDescription()).getId(), new PageRequest(0, 10)).size(), is(1));
     }
 
     @Test
     public void checkGetTeachersByExperience() {
         teacherRepository.save(teacher);
 
-        assertThat(teacherRepository.getTeachersMoreThanExperience(teacher.getExperience()).size(), is(1));
+        assertThat(teacherRepository.getTeachersMoreThanExperience(teacher.getExperience(), new PageRequest(0, 10)).size(), is(1));
     }
 
     @Test
     public void checkGetMaxExperiencedTeachers() {
         teacherRepository.save(teacher);
 
-        assertThat(teacherRepository.getMaxExpiriencedTeachers().size(), is(1));
+        assertThat(teacherRepository.getMaxExperiencedTeachers(new PageRequest(0, 10)).size(), is(1));
     }
 
     @Test
     public void checkGetMinExperiencedTeachers() {
         teacherRepository.save(teacher);
 
-        assertThat(teacherRepository.getMinExpiriencedTeachers().size(), is(1));
+        assertThat(teacherRepository.getMinExperiencedTeachers(new PageRequest(0, 10)).size(), is(1));
+    }
+
+    @Test
+    public void checkGetTeacherByName() {
+        teacherRepository.save(teacher);
+
+        assertNotNull("Teacher not found", teacherRepository.getTeacherByName(teacher.getName()));
     }
 }

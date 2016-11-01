@@ -1,3 +1,5 @@
+package dao;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -13,7 +15,6 @@ import week4.home.study.entity.Groups;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -31,7 +32,7 @@ public class TGroupDao {
     private Groups updated;
 
     @Before
-    public void initialize() throws OperationFailedException, EntityAlreadyExistException, ComingNullObjectException {
+    public void initialize() throws EntityAlreadyExistException, ComingNullObjectException {
         groups = new Groups();
         groups.setName("Test group name");
     }
@@ -45,20 +46,19 @@ public class TGroupDao {
     }
 
     @Test
-    public void addGroupIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addGroupIsPossible() throws ComingNullObjectException, EntityAlreadyExistException {
         assertTrue("Group didn't add", iGroupDao.addGroup(new Groups("group")));
     }
 
     @Test(expected = EntityAlreadyExistException.class)
-    public void addDuplicateGroupIsImpossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addDuplicateGroupIsImpossible() throws ComingNullObjectException, EntityAlreadyExistException {
         iGroupDao.addGroup(groups);
 
         iGroupDao.addGroup(groups);
     }
 
     @Test
-    public void groupExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void groupExistsAfterAdd() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iGroupDao.addGroup(groups);
 
@@ -66,8 +66,7 @@ public class TGroupDao {
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void groupDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
-            , EntityNotFoundException, EntityAlreadyExistException {
+    public void groupDoesNotExistAfterRemove() throws ComingNullObjectException, EntityNotFoundException, EntityAlreadyExistException {
 
         iGroupDao.addGroup(groups);
 
@@ -77,8 +76,7 @@ public class TGroupDao {
     }
 
     @Test
-    public void checkTotalGroups() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException
-            , EntityNotFoundException {
+    public void checkTotalGroups() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iGroupDao.addGroup(groups);
 
@@ -86,8 +84,7 @@ public class TGroupDao {
     }
 
     @Test
-    public void updateGroupIsPossible() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void updateGroupIsPossible() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iGroupDao.addGroup(groups);
 
@@ -100,8 +97,7 @@ public class TGroupDao {
     }
 
     @Test
-    public void groupUpdated() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void groupUpdated() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iGroupDao.addGroup(groups);
 
@@ -116,5 +112,17 @@ public class TGroupDao {
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfGroupNotExists() throws EntityNotFoundException {
         iGroupDao.removeGroup(iGroupDao.getGroup(groups).getId());
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void addGroupIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+
+        iGroupDao.addGroup(null);
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void updateGroupIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+
+        iGroupDao.updateGroup(null);
     }
 }

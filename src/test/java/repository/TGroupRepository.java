@@ -1,16 +1,24 @@
+package repository;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import week4.home.study.dao.repositories.GroupRepository;
+import week4.home.study.dao.repositories.SubjectRepository;
 import week4.home.study.entity.Groups;
+import week4.home.study.entity.Subject;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
@@ -20,6 +28,8 @@ public class TGroupRepository {
     private Groups updated;
     @Autowired
     private GroupRepository groupRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
 
     @Before
     public void initialize() {
@@ -82,5 +92,31 @@ public class TGroupRepository {
         assertNull("Old group exists", groupRepository.getGroupByName(groups.getName()));
 
         groupRepository.delete(groupRepository.getGroupByName(updated.getName()).getId());
+    }
+
+    @Test
+    public void getGroupsLikeTesting() {
+        groupRepository.save(groups);
+
+        groupRepository.save(new Groups("test"));
+
+        assertThat(groupRepository.getGroupsLike("%test%", new PageRequest(0, 10)).size(), is(2));
+    }
+
+    @Test
+    public void getGroupsBySubject() {
+        List<Subject> subjects = new ArrayList<>();
+        Subject subject = new Subject("Physics", "Description");
+
+        subjectRepository.save(subject);
+        subject = subjectRepository.getSubjectByName(subject.getName());
+
+        subjects.add(subject);
+
+        groups.setSubjects(subjects);
+
+        groupRepository.save(groups);
+
+        assertThat(groupRepository.getGroupsBySubject(subject.getName(), new PageRequest(0, 10)).size(), is(1));
     }
 }

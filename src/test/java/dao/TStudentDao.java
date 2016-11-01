@@ -1,3 +1,5 @@
+package dao;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +17,6 @@ import week4.home.study.entity.Student;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -36,8 +37,7 @@ public class TStudentDao {
     private Groups groups;
 
     @Before
-    public void initialize() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void initialize() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         student = new Student();
         groups = new Groups();
@@ -58,28 +58,26 @@ public class TStudentDao {
     }
 
     @Test
-    public void addStudentIsPossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addStudentIsPossible() throws ComingNullObjectException, EntityAlreadyExistException {
         assertTrue("Student didn't add", iStudentDao.addStudent(student));
     }
 
     @Test(expected = EntityAlreadyExistException.class)
-    public void addDuplicateStudentIsImpossible() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException {
+    public void addDuplicateStudentIsImpossible() throws ComingNullObjectException, EntityAlreadyExistException {
         iStudentDao.addStudent(student);
 
         iStudentDao.addStudent(student);
     }
 
     @Test
-    public void studentExistsAfterAdd() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void studentExistsAfterAdd() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
         iStudentDao.addStudent(student);
 
         assertNotNull("Student not found", iStudentDao.getStudent(student));
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void studentDoesNotExistAfterRemove() throws ComingNullObjectException, OperationFailedException
-            , EntityNotFoundException, EntityAlreadyExistException {
+    public void studentDoesNotExistAfterRemove() throws ComingNullObjectException, EntityNotFoundException, EntityAlreadyExistException {
         iStudentDao.addStudent(student);
 
         iStudentDao.removeStudent(iStudentDao.getStudent(student).getId());
@@ -88,8 +86,7 @@ public class TStudentDao {
     }
 
     @Test
-    public void checkTotalStudents() throws ComingNullObjectException, OperationFailedException, EntityAlreadyExistException
-            , EntityNotFoundException {
+    public void checkTotalStudents() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iStudentDao.addStudent(student);
 
@@ -97,8 +94,7 @@ public class TStudentDao {
     }
 
     @Test
-    public void updateStudentIsPossible() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void updateStudentIsPossible() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iStudentDao.addStudent(student);
 
@@ -111,8 +107,7 @@ public class TStudentDao {
     }
 
     @Test
-    public void studentUpdated() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void studentUpdated() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iStudentDao.addStudent(student);
 
@@ -125,16 +120,33 @@ public class TStudentDao {
     }
 
     @Test
-    public void checkGetStudentsByGroup() throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException, EntityNotFoundException {
+    public void checkGetStudentsByGroup() throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
         iStudentDao.addStudent(student);
 
-        assertThat(iStudentDao.getStudentsByGroup(iGroupDao.getGroup(groups), 10).size(), is(1));
+        assertThat(iStudentDao.getStudentsByGroup(iGroupDao.getGroup(groups), 0, 10).size(), is(1));
     }
 
     @Test(expected = EntityNotFoundException.class)
     public void canNotRemoveIfStudentNotExists() throws EntityNotFoundException {
         iStudentDao.removeStudent(iStudentDao.getStudent(student).getId());
+    }
+
+    @Test()
+    public void checkGetStudentByName() throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException {
+
+        iStudentDao.addStudent(student);
+
+        assertNotNull("Student not found", iStudentDao.getStudentByName(student.getName()));
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void addStudentIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+        iStudentDao.addStudent(null);
+    }
+
+    @Test(expected = ComingNullObjectException.class)
+    public void updateStudentIfComingNullObjectThrowException() throws EntityAlreadyExistException, ComingNullObjectException {
+        iStudentDao.updateStudent(null);
     }
 }

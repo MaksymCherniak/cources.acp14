@@ -1,9 +1,12 @@
+package repository;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import week4.home.study.dao.repositories.GroupRepository;
@@ -20,6 +23,7 @@ import static org.junit.Assert.assertThat;
 @SpringBootTest(properties = {"jdbc.url=jdbc:mysql://localhost:3306/studiestest", "hibernate.hbm2ddl.auto=create-drop"})
 @ContextConfiguration("classpath:spring/testApplicationConfig.xml")
 public class TStudentRepository {
+
     private Student student;
     private Student updated;
     private Groups groups;
@@ -103,6 +107,23 @@ public class TStudentRepository {
     public void checkGetStudentsByGroup() {
         studentRepository.save(student);
 
-        assertThat(studentRepository.getStudentsByGroup(groupRepository.getGroupByName(groups.getName()).getId()).size(), is(1));
+        assertThat(studentRepository.getStudentsByGroup(groupRepository.getGroupByName(
+                groups.getName()).getId(), new PageRequest(0, 10)).size(), is(1));
+    }
+
+    @Test
+    public void checkGetStudentByName() {
+        studentRepository.save(student);
+
+        assertNotNull("Student not found", studentRepository.getStudentByName(student.getName()));
+    }
+
+    @Test
+    public void getStudentsByNameLikeTesting() {
+        studentRepository.save(student);
+
+        studentRepository.save(new Student("name"));
+
+        assertThat(studentRepository.getStudentsByNameLike("%name%", new PageRequest(0, 10)).size(), is(2));
     }
 }
