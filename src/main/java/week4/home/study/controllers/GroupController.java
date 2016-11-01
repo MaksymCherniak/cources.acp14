@@ -1,15 +1,12 @@
 package week4.home.study.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import week4.home.study.dao.interfaces.IGroupDao;
 import week4.home.study.entity.Groups;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
+import week4.home.study.service.interfaces.IGroupService;
 
 import java.util.List;
 
@@ -18,63 +15,85 @@ import static week4.home.study.start.AppStaticValues.*;
 @RestController
 public class GroupController {
     @Autowired
-    private IGroupDao iGroupDao;
+    private IGroupService iGroupService;
 
     @RequestMapping(value = "/addGroup", method = RequestMethod.POST)
     @ResponseBody
-    public String addGroup(@RequestBody Groups groups) throws EntityAlreadyExistException, ComingNullObjectException
-            , OperationFailedException {
+    public String addGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityAlreadyExistException, ComingNullObjectException {
 
-        iGroupDao.addGroup(groups);
+        iGroupService.addGroup(groupName);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + groups.toString() + LOG_OPERATION_ADD;
+        return addOperationInfo(groupName);
     }
 
     @RequestMapping(value = "/getAllGroups", method = RequestMethod.GET)
     @ResponseBody
-    public List<Groups> getAllGroups(@RequestParam(name = "from") int from,
-                                     @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
+    public List<Groups> getAllGroups(@RequestParam(name = FROM) int from,
+                                     @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iGroupDao.getAllGroups(from, quantity);
+        return iGroupService.getAllGroups(from, quantity);
+    }
+
+    @RequestMapping(value = "/getGroupsBySubject", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Groups> getGroupsBySubject(@RequestParam(name = SUBJECT_NAME) String subjectName,
+                                           @RequestParam(name = FROM) int from,
+                                           @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
+
+        return iGroupService.getGroupsBySubject(subjectName, from, quantity);
+    }
+
+    @RequestMapping(value = "/groupSetSubjects", method = RequestMethod.POST)
+    @ResponseBody
+    public String groupSetSubjects(@RequestParam(name = GROUP_NAME) String groupName,
+                                   @RequestParam(name = SUBJECT_NAME) String subjectName)
+            throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
+
+        iGroupService.setSubject(groupName, subjectName);
+
+        return updateOperationInfo(groupName);
     }
 
     @RequestMapping(value = "/updateGroup", method = RequestMethod.POST)
     @ResponseBody
-    public String updateGroup(@RequestBody Groups groups) throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException {
+    public String updateGroup(@RequestParam(name = OLD_NAME) String oldName,
+                              @RequestParam(name = NEW_NAME) String newName) throws ComingNullObjectException
+            , EntityAlreadyExistException, EntityNotFoundException {
 
-        iGroupDao.updateGroup(groups);
+        iGroupService.updateGroup(oldName, newName);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + groups.toString() + LOG_OPERATION_UPDATE;
+        return updateOperationInfo(oldName);
     }
 
     @RequestMapping(value = "/removeGroup", method = RequestMethod.POST)
     @ResponseBody
-    public String removeGroup(@RequestParam long id) throws EntityNotFoundException {
+    public String removeGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException {
 
-        Groups groups = iGroupDao.getGroupById(id);
+        iGroupService.removeGroup(groupName);
 
-        iGroupDao.removeGroup(id);
-
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + groups.toString() + LOG_OPERATION_REMOVE;
+        return removeOperationInfo(groupName);
     }
 
     @RequestMapping(value = "/getGroupByName", method = RequestMethod.GET)
     @ResponseBody
-    public Groups getGroup(@RequestParam(name = "name") String name) throws EntityNotFoundException {
+    public Groups getGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException {
 
-        Groups groups = new Groups(name);
-
-        return iGroupDao.getGroup(groups);
+        return iGroupService.getGroupByName(groupName);
     }
 
-    @RequestMapping(value = "/getGroupById", method = RequestMethod.GET)
+    @RequestMapping(value = "/getGroupsLike", method = RequestMethod.GET)
     @ResponseBody
-    public Groups getGroupById(@RequestParam(name = "id") long id) throws EntityNotFoundException {
+    public List<Groups> getGroupsLike(@RequestParam(name = GROUP_NAME) String groupName,
+                                      @RequestParam(name = FROM) int from,
+                                      @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iGroupDao.getGroupById(id);
+        return iGroupService.getGroupsLike(groupName, from, quantity);
+    }
+
+    @RequestMapping(value = "/getGroupByStudent", method = RequestMethod.GET)
+    @ResponseBody
+    public Groups getGroupByStudent(@RequestParam(name = STUDENT_NAME) String studentName) throws EntityNotFoundException {
+
+        return iGroupService.getGroupByStudentName(studentName);
     }
 }

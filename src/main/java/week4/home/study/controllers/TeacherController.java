@@ -1,16 +1,12 @@
 package week4.home.study.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import week4.home.study.dao.interfaces.ISubjectDao;
-import week4.home.study.dao.interfaces.ITeacherDao;
 import week4.home.study.entity.Teacher;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
+import week4.home.study.service.interfaces.ITeacherService;
 
 import java.util.List;
 
@@ -19,104 +15,105 @@ import static week4.home.study.start.AppStaticValues.*;
 @RestController
 public class TeacherController {
     @Autowired
-    private ITeacherDao iTeacherDao;
-    @Autowired
-    private ISubjectDao iSubjectDao;
+    private ITeacherService iTeacherService;
 
     @RequestMapping(value = "/addTeacher", method = RequestMethod.POST)
     @ResponseBody
-    public String addTeacher(@RequestBody Teacher teacher) throws EntityAlreadyExistException, ComingNullObjectException
-            , OperationFailedException {
+    public String addTeacher(@RequestParam(name = TEACHER_NAME) String teacherName,
+                             @RequestParam(name = EXPERIENCE) int experience) throws EntityAlreadyExistException, ComingNullObjectException {
 
-        iTeacherDao.addTeacher(teacher);
+        iTeacherService.addTeacher(teacherName, experience);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + teacher.toString() + LOG_OPERATION_ADD;
+        return addOperationInfo(teacherName);
     }
 
     @RequestMapping(value = "/getAllTeachers", method = RequestMethod.GET)
     @ResponseBody
-    public List<Teacher> getAllTeachers(@RequestParam(name = "from") int from,
-                                        @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
+    public List<Teacher> getAllTeachers(@RequestParam(name = FROM) int from,
+                                        @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iTeacherDao.getAllTeachers(from, quantity);
+        return iTeacherService.getAllTeachers(from, quantity);
     }
 
     @RequestMapping(value = "/updateTeacher", method = RequestMethod.POST)
     @ResponseBody
-    public String updateTeacher(@RequestBody Teacher teacher) throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException {
+    public String updateTeacher(@RequestParam(name = OLD_NAME) String oldName,
+                                @RequestParam(name = NEW_NAME) String newName,
+                                @RequestParam(name = EXPERIENCE) int experience,
+                                @RequestParam(name = SUBJECT_NAME) String subjectName) throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
 
-        iTeacherDao.updateTeacher(teacher);
+        iTeacherService.updateTeacher(oldName, newName, experience, subjectName);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + teacher.toString() + LOG_OPERATION_UPDATE;
+        return updateOperationInfo(oldName);
     }
 
     @RequestMapping(value = "/removeTeacher", method = RequestMethod.POST)
     @ResponseBody
-    public String removeTeacher(@RequestParam long id) throws EntityNotFoundException {
+    public String removeTeacher(@RequestParam(name = TEACHER_NAME) String teacherName) throws EntityNotFoundException {
 
-        Teacher teacher = iTeacherDao.getTeacherById(id);
+        iTeacherService.removeTeacher(teacherName);
 
-        iTeacherDao.removeTeacher(id);
-
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + teacher.toString() + LOG_OPERATION_REMOVE;
+        return removeOperationInfo(teacherName);
     }
 
-    @RequestMapping(value = "/getTeacher", method = RequestMethod.GET)
+    @RequestMapping(value = "/setSubject", method = RequestMethod.POST)
     @ResponseBody
-    public Teacher getTeacher(@RequestParam(name = "name") String name,
-                              @RequestParam(name = "experience") int experience,
-                              @RequestParam(name = "subject") String subjectName) throws EntityNotFoundException {
+    public String setSubject(@RequestParam(name = TEACHER_NAME) String teacherName,
+                             @RequestParam(name = SUBJECT_NAME) String subjectName) throws EntityNotFoundException
+            , EntityAlreadyExistException, ComingNullObjectException {
 
-        return iTeacherDao.getTeacher(new Teacher(name, experience, iSubjectDao.getSubjectByName(subjectName)));
+        iTeacherService.setSubject(teacherName, subjectName);
+
+        return updateOperationInfo(teacherName);
+    }
+
+    @RequestMapping(value = "/getTeacherByNameLike", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Teacher> getTeacherByNameLike(@RequestParam(name = TEACHER_NAME) String teacherName,
+                                              @RequestParam(name = FROM) int from,
+                                              @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
+
+        return iTeacherService.getTeacherByNameLike(teacherName, from, quantity);
     }
 
     @RequestMapping(value = "/getTeacherByName", method = RequestMethod.GET)
     @ResponseBody
-    public Teacher getTeacherByName(@RequestParam(name = "name") String name) throws EntityNotFoundException {
+    public Teacher getTeacherByName(@RequestParam(name = TEACHER_NAME) String teacherName) throws EntityNotFoundException {
 
-        return iTeacherDao.getTeacherByName(name);
-    }
-
-    @RequestMapping(value = "/getTeacherById", method = RequestMethod.GET)
-    @ResponseBody
-    public Teacher getTeacherById(@RequestParam(name = "id") long id) throws EntityNotFoundException {
-
-        return iTeacherDao.getTeacherById(id);
+        return iTeacherService.getTeacherByName(teacherName);
     }
 
     @RequestMapping(value = "/getTeacherBySubject", method = RequestMethod.GET)
     @ResponseBody
-    public List<Teacher> getTeacherBySubject(@RequestParam(name = "subject") String subject) {
+    public List<Teacher> getTeacherBySubject(@RequestParam(name = SUBJECT_NAME) String subjectName,
+                                             @RequestParam(name = FROM) int from,
+                                             @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iTeacherDao.getTeachersBySubject(subject);
+        return iTeacherService.getAllTeachersBySubject(subjectName, from, quantity);
     }
 
     @RequestMapping(value = "/getMaxExperiencedTeachers", method = RequestMethod.GET)
     @ResponseBody
-    public List<Teacher> getMaxExperiencedTeachers(@RequestParam(name = "from") int from,
-                                                   @RequestParam(name = "quantity") int quantity) {
+    public List<Teacher> getMaxExperiencedTeachers(@RequestParam(name = FROM) int from,
+                                                   @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iTeacherDao.getMaxExperiencedTeachers(from, quantity);
+        return iTeacherService.getMaxExperiencedTeachers(from, quantity);
     }
 
     @RequestMapping(value = "/getMinExperiencedTeachers", method = RequestMethod.GET)
     @ResponseBody
-    public List<Teacher> getMinExperiencedTeachers(@RequestParam(name = "from") int from,
-                                                   @RequestParam(name = "quantity") int quantity) {
+    public List<Teacher> getMinExperiencedTeachers(@RequestParam(name = FROM) int from,
+                                                   @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iTeacherDao.getMinExperiencedTeachers(from, quantity);
+        return iTeacherService.getMinExperiencedTeachers(from, quantity);
     }
 
     @RequestMapping(value = "/getTeachersMoreThanExperience", method = RequestMethod.GET)
     @ResponseBody
-    public List<Teacher> getTeachersMoreThanExperience(@RequestParam(name = "experience") int experience,
-                                                       @RequestParam(name = "from") int from,
-                                                       @RequestParam(name = "quantity") int quantity) {
+    public List<Teacher> getTeachersMoreThanExperience(@RequestParam(name = EXPERIENCE) int experience,
+                                                       @RequestParam(name = FROM) int from,
+                                                       @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iTeacherDao.getTeacherByExperience(experience, from, quantity);
+        return iTeacherService.getTeachersMoreThanExperience(experience, from, quantity);
     }
 }

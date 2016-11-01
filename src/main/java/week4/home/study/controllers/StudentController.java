@@ -1,17 +1,12 @@
 package week4.home.study.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import week4.home.study.dao.interfaces.IGroupDao;
-import week4.home.study.dao.interfaces.IStudentDao;
-import week4.home.study.entity.Groups;
 import week4.home.study.entity.Student;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
-import week4.home.study.exceptions.OperationFailedException;
+import week4.home.study.service.interfaces.IStudentService;
 
 import java.util.List;
 
@@ -20,74 +15,89 @@ import static week4.home.study.start.AppStaticValues.*;
 @RestController
 public class StudentController {
     @Autowired
-    private IStudentDao iStudentDao;
-    @Autowired
-    private IGroupDao iGroupDao;
+    private IStudentService iStudentService;
 
     @RequestMapping(value = "/addStudent", method = RequestMethod.POST)
     @ResponseBody
-    public String addStudent(@RequestBody Student student) throws OperationFailedException, EntityAlreadyExistException
-            , ComingNullObjectException {
+    public String addStudent(@RequestParam(name = STUDENT_NAME) String studentName,
+                             @RequestParam(name = GROUP_NAME) String groupName) throws EntityAlreadyExistException
+            , ComingNullObjectException, EntityNotFoundException {
 
-        iStudentDao.addStudent(student);
+        iStudentService.addStudent(studentName, groupName);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + student.toString() + LOG_OPERATION_ADD;
+        return addOperationInfo(studentName);
     }
 
     @RequestMapping(value = "/getAllStudents", method = RequestMethod.GET)
     @ResponseBody
-    public List<Student> getAllStudents(@RequestParam(name = "from") int from,
-                                        @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
+    public List<Student> getAllStudents(@RequestParam(name = FROM) int from,
+                                        @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iStudentDao.getAllStudents(from, quantity);
+        return iStudentService.getAllStudents(from, quantity);
     }
 
     @RequestMapping
     @ResponseBody
-    public String updateStudent(@RequestBody Student student) throws ComingNullObjectException, OperationFailedException
-            , EntityAlreadyExistException {
+    public String updateStudent(@RequestParam(name = OLD_NAME) String oldName,
+                                @RequestParam(name = NEW_NAME) String newName,
+                                @RequestParam(name = GROUP_NAME) String groupName) throws ComingNullObjectException
+            , EntityAlreadyExistException, EntityNotFoundException {
 
-        iStudentDao.updateStudent(student);
+        iStudentService.updateStudent(oldName, newName, groupName);
 
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + student.toString() + LOG_OPERATION_UPDATE;
+        return updateOperationInfo(oldName);
     }
 
     @RequestMapping(value = "/removeStudent", method = RequestMethod.POST)
     @ResponseBody
-    public String removeStudent(@RequestParam long id) throws EntityNotFoundException {
+    public String removeStudent(@RequestParam(name = STUDENT_NAME) String studentName) throws EntityNotFoundException {
 
-        Student student = iStudentDao.getStudentById(id);
+        iStudentService.removeStudent(studentName);
 
-        iStudentDao.removeStudent(id);
-
-        return String.valueOf(new ResponseEntity<String>(HttpStatus.ACCEPTED)) +
-                "\n" + student.toString() + LOG_OPERATION_REMOVE;
+        return removeOperationInfo(studentName);
     }
 
     @RequestMapping(value = "/getStudent", method = RequestMethod.GET)
     @ResponseBody
-    public Student getStudent(@RequestParam(name = "student") String student,
-                              @RequestParam(name = "group") String group) throws EntityNotFoundException {
+    public Student getStudent(@RequestParam(name = STUDENT_NAME) String studentName,
+                              @RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException {
 
-        Groups groups = iGroupDao.getGroup(new Groups(group));
-
-        return iStudentDao.getStudent(new Student(student, groups));
+        return iStudentService.getStudent(studentName, groupName);
     }
 
-    @RequestMapping(value = "/getStudentById", method = RequestMethod.GET)
+    @RequestMapping(value = "/getStudentsByNameLike", method = RequestMethod.GET)
     @ResponseBody
-    public Student getStudentById(@RequestParam(name = "id") long id) throws EntityNotFoundException {
+    public List<Student> getStudentsByNameLike(@RequestParam(name = STUDENT_NAME) String studentName,
+                                               @RequestParam(name = FROM) int from,
+                                               @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iStudentDao.getStudentById(id);
+        return iStudentService.getAllStudentsLike(studentName, from, quantity);
     }
 
     @RequestMapping(value = "/getStudentsByGroup", method = RequestMethod.GET)
     @ResponseBody
-    public List<Student> getStudentsByGroup(@RequestParam(name = "group") String group,
-                                            @RequestParam(name = "quantity") int quantity) throws EntityNotFoundException {
+    public List<Student> getStudentsByGroup(@RequestParam(name = GROUP_NAME) String groupName,
+                                            @RequestParam(name = FROM) int from,
+                                            @RequestParam(name = QUANTITY) int quantity) throws EntityNotFoundException {
 
-        return iStudentDao.getStudentsByGroup(iGroupDao.getGroup(new Groups(group)), quantity);
+        return iStudentService.getAllStudentsByGroupName(groupName, from, quantity);
+    }
+
+    @RequestMapping(value = "/getStudentByName", method = RequestMethod.GET)
+    @ResponseBody
+    public Student getStudentByName(@RequestParam(name = STUDENT_NAME) String studentNmae) throws EntityNotFoundException {
+
+        return iStudentService.getStudentByName(studentNmae);
+    }
+
+    @RequestMapping(value = "/setGroup", method = RequestMethod.POST)
+    @ResponseBody
+    public String setGroup(@RequestParam(name = STUDENT_NAME) String studentName,
+                           @RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException
+            , EntityAlreadyExistException, ComingNullObjectException {
+
+        iStudentService.setGroup(studentName, groupName);
+
+        return updateOperationInfo(studentName);
     }
 }
