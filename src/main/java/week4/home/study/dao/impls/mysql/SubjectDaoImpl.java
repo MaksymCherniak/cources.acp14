@@ -6,14 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import week4.home.study.dao.interfaces.ISubjectDao;
 import week4.home.study.dao.repositories.SubjectRepository;
 import week4.home.study.entity.Subject;
-import week4.home.study.exceptions.ComingNullObjectException;
-import week4.home.study.exceptions.EntityAlreadyExistException;
-import week4.home.study.exceptions.EntityNotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static week4.home.study.start.AppStaticValues.*;
+import static week4.home.study.main.AppStaticValues.*;
 
 public class SubjectDaoImpl implements ISubjectDao {
     private static Logger log = Logger.getLogger(SubjectDaoImpl.class.getName());
@@ -24,15 +20,7 @@ public class SubjectDaoImpl implements ISubjectDao {
     }
 
     @Override
-    public boolean addSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException {
-
-        if (subject == null || subject.getName() == null) {
-            throw new ComingNullObjectException(Subject.class.getName(), OPERATION_UPDATE);
-        }
-
-        if (subjectRepository.getSubject(subject.getName(), subject.getDescription()) != null) {
-            throw new EntityAlreadyExistException(subject);
-        }
+    public boolean addSubject(Subject subject) {
 
         subjectRepository.save(subject);
 
@@ -51,15 +39,7 @@ public class SubjectDaoImpl implements ISubjectDao {
     }
 
     @Override
-    public boolean updateSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException {
-
-        if (subject == null || subject.getName() == null) {
-            throw new ComingNullObjectException(Subject.class.getName(), OPERATION_UPDATE);
-        }
-
-        if (subjectRepository.getSubject(subject.getName(), subject.getDescription()) != null) {
-            throw new EntityAlreadyExistException(subject);
-        }
+    public boolean updateSubject(Subject subject) {
 
         subjectRepository.updateSubject(subject.getName(), subject.getDescription(), subject.getId());
 
@@ -68,13 +48,13 @@ public class SubjectDaoImpl implements ISubjectDao {
     }
 
     @Override
-    public Subject getSubject(Subject subject) throws EntityNotFoundException {
-        return getSingleResult(ALL, subject.getName(), subject.getDescription());
+    public Subject getSubject(Subject subject) {
+        return subjectRepository.getSubject(subject.getName(), subject.getDescription());
     }
 
     @Override
-    public Subject getSubjectByName(String name) throws EntityNotFoundException {
-        return getSingleResult(NAME, name);
+    public Subject getSubjectByName(String name) {
+        return subjectRepository.getSubjectByName(name);
     }
 
     @Override
@@ -83,67 +63,12 @@ public class SubjectDaoImpl implements ISubjectDao {
     }
 
     @Override
-    public List<Subject> getAllSubjects(int from, int quantity) throws EntityNotFoundException {
-        return getAllSubjects(ALL, null, from, quantity);
+    public List<Subject> getAllSubjects(int from, int quantity) {
+        return subjectRepository.findAll(new PageRequest(from, quantity)).getContent();
     }
 
     @Override
-    public List<Subject> getAllSubjectsByNameLike(String name, int from, int quantity) throws EntityNotFoundException {
-        return getAllSubjects(NAME, name, from, quantity);
-    }
-
-    /**
-     * @param operation(String) - ALL - for getSubject() method
-     *                          - NAME - for getSubjectByName() method
-     * @param param(String)     - name - subject name, for ALL and NAME operations
-     *                          - description - subject description, for ALL operation
-     * @return Subject entity
-     * @throws EntityNotFoundException
-     */
-    private Subject getSingleResult(String operation, String... param) throws EntityNotFoundException {
-        Subject result = null;
-        switch (operation) {
-            case ALL:
-                result = subjectRepository.getSubject(param[0], param[1]);
-                break;
-            case NAME:
-                result = subjectRepository.getSubjectByName(param[0]);
-                break;
-        }
-
-        if (result != null) {
-            return result;
-        }
-
-        log.info(ERROR_SUBJECT_NOT_FOUND);
-        throw new EntityNotFoundException(Subject.class.getName());
-    }
-
-    /**
-     * @param operation(String) - ALL - for getAllSubjects() method
-     *                          - NAME - for getAllSubjectsByNameLike() method
-     * @param param(String)     - name - subject name, for NAME operation
-     * @param from(int)         the starting row of entries returning
-     * @param quantity(int)     the total number of entries returning
-     * @return List of students
-     * @throws EntityNotFoundException
-     */
-    private List<Subject> getAllSubjects(String operation, String param, int from, int quantity) throws EntityNotFoundException {
-        List<Subject> result = new ArrayList<>();
-        switch (operation) {
-            case ALL:
-                result = subjectRepository.findAll(new PageRequest(from, quantity)).getContent();
-                break;
-            case NAME:
-                result = subjectRepository.getAllSubjectsByNameLike(param, new PageRequest(from, quantity));
-                break;
-        }
-
-        if (result.size() != 0) {
-            return result;
-        }
-
-        log.info(ERROR_SUBJECT_NOT_FOUND);
-        throw new EntityNotFoundException(Subject.class.getName());
+    public List<Subject> getAllSubjectsByNameLike(String name, int from, int quantity) {
+        return subjectRepository.getAllSubjectsByNameLike(name, new PageRequest(from, quantity));
     }
 }

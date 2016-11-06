@@ -10,7 +10,7 @@ import week4.home.study.service.interfaces.ITeacherService;
 
 import java.util.List;
 
-import static week4.home.study.start.AppStaticValues.*;
+import static week4.home.study.main.AppStaticValues.*;
 
 @RestController
 public class TeacherController {

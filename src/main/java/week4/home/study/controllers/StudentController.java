@@ -10,7 +10,7 @@ import week4.home.study.service.interfaces.IStudentService;
 
 import java.util.List;
 
-import static week4.home.study.start.AppStaticValues.*;
+import static week4.home.study.main.AppStaticValues.*;
 
 @RestController
 public class StudentController {
@@ -90,7 +90,7 @@ public class StudentController {
         return iStudentService.getStudentByName(studentNmae);
     }
 
-    @RequestMapping(value = "/setGroup", method = RequestMethod.POST)
+    @RequestMapping(value = "/setGroups", method = RequestMethod.POST)
     @ResponseBody
     public String setGroup(@RequestParam(name = STUDENT_NAME) String studentName,
                            @RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException

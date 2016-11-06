@@ -1,26 +1,23 @@
 package week4.home.study.dao.interfaces;
 
 import week4.home.study.entity.Subject;
-import week4.home.study.exceptions.ComingNullObjectException;
-import week4.home.study.exceptions.EntityAlreadyExistException;
-import week4.home.study.exceptions.EntityNotFoundException;
 
 import java.util.List;
 
 public interface ISubjectDao {
-    boolean addSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException;
+    boolean addSubject(Subject subject);
 
     boolean removeSubject(long id);
 
-    boolean updateSubject(Subject subject) throws ComingNullObjectException, EntityAlreadyExistException;
+    boolean updateSubject(Subject subject);
 
-    Subject getSubject(Subject subject) throws EntityNotFoundException;
+    Subject getSubject(Subject subject);
 
-    Subject getSubjectByName(String name) throws EntityNotFoundException;
+    Subject getSubjectByName(String name);
 
     Subject getSubjectById(long id);
 
-    List<Subject> getAllSubjects(int from, int quantity) throws EntityNotFoundException;
+    List<Subject> getAllSubjects(int from, int quantity);
 
-    List<Subject> getAllSubjectsByNameLike(String name, int from, int quantity) throws EntityNotFoundException;
+    List<Subject> getAllSubjectsByNameLike(String name, int from, int quantity);
 }

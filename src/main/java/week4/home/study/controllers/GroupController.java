@@ -6,11 +6,12 @@ import week4.home.study.entity.Groups;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
+import week4.home.study.exceptions.InvalidNameFormatException;
 import week4.home.study.service.interfaces.IGroupService;
 
 import java.util.List;
 
-import static week4.home.study.start.AppStaticValues.*;
+import static week4.home.study.main.AppStaticValues.*;
 
 @RestController
 public class GroupController {
@@ -19,7 +20,8 @@ public class GroupController {
 
     @RequestMapping(value = "/addGroup", method = RequestMethod.POST)
     @ResponseBody
-    public String addGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityAlreadyExistException, ComingNullObjectException {
+    public String addGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityAlreadyExistException
+            , ComingNullObjectException, InvalidNameFormatException, EntityNotFoundException {
 
         iGroupService.addGroup(groupName);
 
@@ -47,7 +49,7 @@ public class GroupController {
     @ResponseBody
     public String groupSetSubjects(@RequestParam(name = GROUP_NAME) String groupName,
                                    @RequestParam(name = SUBJECT_NAME) String subjectName)
-            throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException {
+            throws ComingNullObjectException, EntityAlreadyExistException, EntityNotFoundException, InvalidNameFormatException {
 
         iGroupService.setSubject(groupName, subjectName);
 
@@ -58,7 +60,7 @@ public class GroupController {
     @ResponseBody
     public String updateGroup(@RequestParam(name = OLD_NAME) String oldName,
                               @RequestParam(name = NEW_NAME) String newName) throws ComingNullObjectException
-            , EntityAlreadyExistException, EntityNotFoundException {
+            , EntityAlreadyExistException, EntityNotFoundException, InvalidNameFormatException {
 
         iGroupService.updateGroup(oldName, newName);
 
@@ -76,7 +78,8 @@ public class GroupController {
 
     @RequestMapping(value = "/getGroupByName", method = RequestMethod.GET)
     @ResponseBody
-    public Groups getGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException {
+    public Groups getGroup(@RequestParam(name = GROUP_NAME) String groupName) throws EntityNotFoundException
+            , ComingNullObjectException, InvalidNameFormatException {
 
         return iGroupService.getGroupByName(groupName);
     }

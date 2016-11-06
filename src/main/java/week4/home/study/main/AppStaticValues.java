@@ -1,4 +1,4 @@
-package week4.home.study.start;
+package week4.home.study.main;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

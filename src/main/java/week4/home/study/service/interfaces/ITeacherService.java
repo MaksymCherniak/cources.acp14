@@ -4,17 +4,18 @@ import week4.home.study.entity.Teacher;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
+import week4.home.study.exceptions.InvalidNameFormatException;
 
 import java.util.List;
 
 public interface ITeacherService {
-    boolean addTeacher(String name, int experience) throws EntityAlreadyExistException, ComingNullObjectException;
+    boolean addTeacher(String name, int experience) throws EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException, EntityNotFoundException;
 
-    boolean removeTeacher(String name) throws EntityNotFoundException;
+    boolean removeTeacher(String name) throws EntityNotFoundException, InvalidNameFormatException, ComingNullObjectException;
 
-    boolean setSubject(String teacherName, String subjectName) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException;
+    boolean setSubject(String teacherName, String subjectName) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException;
 
-    boolean updateTeacher(String oldName, String newName, int experience, String subjectName) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException;
+    boolean updateTeacher(String oldName, String newName, int experience, String subjectName) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException;
 
     Teacher getTeacherByName(String name) throws EntityNotFoundException;
 

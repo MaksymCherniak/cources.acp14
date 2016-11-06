@@ -9,11 +9,14 @@ import week4.home.study.entity.Student;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
+import week4.home.study.exceptions.InvalidNameFormatException;
+import week4.home.study.main.Validator;
 import week4.home.study.service.interfaces.IStudentService;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static week4.home.study.start.AppStaticValues.DEFAULT_QUANTITY_VALUE;
+import static week4.home.study.main.AppStaticValues.*;
 
 @Service
 public class StudentServiceImpl implements IStudentService {
@@ -24,85 +27,167 @@ public class StudentServiceImpl implements IStudentService {
 
     @Override
     public boolean addStudent(String name, String group) throws EntityAlreadyExistException, ComingNullObjectException
-            , EntityNotFoundException {
+            , EntityNotFoundException, InvalidNameFormatException {
+
+        Validator.studentName(name);
+        Validator.groupName(group);
 
         Student student = new Student(name);
-        student.setGroups(iGroupDao.getGroup(new Groups(group)));
+        Groups groups = iGroupDao.getGroup(new Groups(group));
+
+        Validator.checkNullObject(Groups.class.getSimpleName(), groups);
+
+        student.setGroups(groups);
+
+        Validator.checkAlreadyExist(iStudentDao.getStudent(student));
 
         return iStudentDao.addStudent(student);
     }
 
     @Override
     public boolean removeStudent(String name) throws EntityNotFoundException {
-        return iStudentDao.removeStudent(iStudentDao.getStudentByName(name).getId());
+        Student student = iStudentDao.getStudentByName(name);
+
+        Validator.checkNullObject(Student.class.getSimpleName(), student);
+
+        return iStudentDao.removeStudent(student.getId());
     }
 
     @Override
     public boolean updateStudent(String oldName, String newName, String groupName) throws EntityNotFoundException
-            , EntityAlreadyExistException, ComingNullObjectException {
+            , EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException {
+
+        Validator.studentName(oldName);
+        Validator.studentName(newName);
+        Validator.groupName(groupName);
 
         Student student = iStudentDao.getStudentByName(oldName);
+        Groups groups = iGroupDao.getGroup(new Groups(groupName));
 
-        if (newName != null && !newName.equals("")) {
-            student.setName(newName);
+        Validator.checkNullObject(Student.class.getSimpleName(), student);
+        Validator.checkNullObject(Groups.class.getSimpleName(), groups);
+
+        if (!oldName.equals(newName)) {
+            Validator.checkAlreadyExist(iStudentDao.getStudent(new Student(newName, groups)));
         }
 
-        if (groupName != null && !groupName.equals("")) {
-            student.setGroups(iGroupDao.getGroup(new Groups(groupName)));
-        }
+        student.setName(newName);
+        student.setGroups(groups);
 
         return iStudentDao.updateStudent(student);
     }
 
     @Override
     public boolean setGroup(String studentName, String groupName) throws EntityNotFoundException
-            , EntityAlreadyExistException, ComingNullObjectException {
+            , EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException {
 
-        Groups group = iGroupDao.getGroup(new Groups(groupName));
+        Validator.studentName(studentName);
+        Validator.groupName(groupName);
+
+        Groups groups = iGroupDao.getGroup(new Groups(groupName));
         Student student = iStudentDao.getStudentByName(studentName);
 
-        student.setGroups(group);
+        Validator.checkNullObject(Student.class.getSimpleName(), student);
+        Validator.checkNullObject(Groups.class.getSimpleName(), groups);
+
+        student.setGroups(groups);
         return iStudentDao.updateStudent(student);
     }
 
     @Override
-    public Student getStudent(String name, String group) throws EntityNotFoundException {
+    public Student getStudent(String name, String group) throws EntityNotFoundException, ComingNullObjectException
+            , InvalidNameFormatException {
 
-        Student student = iStudentDao.getStudentByName(name);
-        student.setGroups(iGroupDao.getGroup(new Groups(group)));
+        Validator.studentName(name);
+        Validator.groupName(group);
 
-        return iStudentDao.getStudent(student);
+        Groups groups = iGroupDao.getGroup(new Groups(group));
+
+        Validator.checkNullObject(Groups.class.getSimpleName(), groups);
+
+        return getSingleResult(GROUP, name, groups);
     }
 
     @Override
-    public Student getStudentByName(String name) throws EntityNotFoundException {
-        return iStudentDao.getStudentByName(name);
+    public Student getStudentByName(String name) throws EntityNotFoundException, InvalidNameFormatException, ComingNullObjectException {
+
+        Validator.studentName(name);
+
+        return getSingleResult(NAME, name);
     }
 
     @Override
     public List<Student> getAllStudents(int from, int quantity) throws EntityNotFoundException {
-        if (quantity == 0) {
-            quantity = DEFAULT_QUANTITY_VALUE;
-        }
-
-        return iStudentDao.getAllStudents(from, quantity);
+        return getAllStudentsBy(ALL, null, from, quantity);
     }
 
     @Override
     public List<Student> getAllStudentsByGroupName(String groupName, int from, int quantity) throws EntityNotFoundException {
-        if (quantity == 0) {
-            quantity = DEFAULT_QUANTITY_VALUE;
-        }
-
-        return iStudentDao.getStudentsByGroup(iGroupDao.getGroup(new Groups(groupName)), from, quantity);
+        return getAllStudentsBy(GROUP, groupName, from, quantity);
     }
 
     @Override
     public List<Student> getAllStudentsLike(String name, int from, int quantity) throws EntityNotFoundException {
+        return getAllStudentsBy(NAME, "%" + name + "%", from, quantity);
+    }
+
+    /**
+     * @param operation(String) - NAME - for getStudentByName() method
+     *                          - GROUP - for getStudent() method
+     * @param param(Object)     - name(String) - student name, for NAME and GROUP operations
+     *                          - group_id(Long) - groups id, for GROUP operation
+     * @return Student entity
+     * @throws EntityNotFoundException
+     */
+    private Student getSingleResult(String operation, Object... param) throws EntityNotFoundException {
+        Student student = null;
+
+        switch (operation) {
+            case NAME:
+                student = iStudentDao.getStudentByName(String.valueOf(param[0]));
+                break;
+            case GROUP:
+                student = iStudentDao.getStudent(new Student(String.valueOf(param[0]), (Groups) param[1]));
+                break;
+        }
+
+        Validator.checkNullObject(Student.class.getSimpleName(), student);
+
+        return student;
+    }
+
+    /**
+     * @param operation(String) - ALL - for getAllStudents() method
+     *                          - NAME - for getStudentsByNameLike() method
+     *                          - GROUP - for getStudentsByGroup() method
+     * @param param(Object)     - name(String) - student name, for NAME operation
+     *                          - group_id(Long) - groups id, fro GROUP operation
+     * @param from(int)         the starting row of entries returning
+     * @param quantity(int)     the total number of entries returning
+     * @return List of students
+     * @throws EntityNotFoundException
+     */
+    private List<Student> getAllStudentsBy(String operation, Object param, int from, int quantity) throws EntityNotFoundException {
         if (quantity == 0) {
             quantity = DEFAULT_QUANTITY_VALUE;
         }
 
-        return iStudentDao.getStudentsByNameLike("%" + name + "%", from, quantity);
+        List<Student> studentList = new ArrayList<>();
+
+        switch (operation) {
+            case ALL:
+                studentList = iStudentDao.getAllStudents(from, quantity);
+                break;
+            case NAME:
+                studentList = iStudentDao.getStudentsByNameLike(String.valueOf(param), from, quantity);
+                break;
+            case GROUP:
+                studentList = iStudentDao.getStudentsByGroup((Groups) param, from, quantity);
+                break;
+        }
+
+        Validator.checkListIsEmpty(Student.class.getSimpleName(), studentList);
+
+        return studentList;
     }
 }

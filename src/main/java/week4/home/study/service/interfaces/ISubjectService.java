@@ -4,15 +4,16 @@ import week4.home.study.entity.Subject;
 import week4.home.study.exceptions.ComingNullObjectException;
 import week4.home.study.exceptions.EntityAlreadyExistException;
 import week4.home.study.exceptions.EntityNotFoundException;
+import week4.home.study.exceptions.InvalidNameFormatException;
 
 import java.util.List;
 
 public interface ISubjectService {
-    boolean addSubject(String name, String description) throws EntityAlreadyExistException, ComingNullObjectException;
+    boolean addSubject(String name, String description) throws EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException, EntityNotFoundException;
 
     boolean removeSubject(String name) throws EntityNotFoundException;
 
-    boolean updateSubject(String oldName, String newName, String newDescription) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException;
+    boolean updateSubject(String oldName, String newName, String newDescription) throws EntityNotFoundException, EntityAlreadyExistException, ComingNullObjectException, InvalidNameFormatException;
 
     Subject getSubjectByName(String name) throws EntityNotFoundException;
 
